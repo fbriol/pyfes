@@ -14,7 +14,7 @@
 #include "fes/darwin.hpp"
 #include "fes/detail/angle/astronomic/frequency.hpp"
 #include "fes/detail/math.hpp"
-#include "fes/interface.hpp"
+#include "fes/interface/wave.hpp"
 #include "fes/xdo.hpp"
 
 namespace fes {
@@ -29,31 +29,23 @@ class Wave : public WaveInterface {
   /// coefficients, etc.).
   /// @param[in] ident Tidal constituent identifier.
   /// @param[in] type Type of tidal wave
-  /// @param[in] is_inferred True if wave is inferred
   /// @param[in] darwin Darwin parameters for the wave
   /// @param[in] calculate_node_factor Function used to calculate the nodal
   /// factor
-  Wave(const ConstituentId ident, WaveType type, const bool is_inferred,
-       const Darwin& darwin, nodal_factor_t calculate_node_factor) noexcept
+  Wave(const ConstituentId ident, WaveType type, const Darwin& darwin,
+       nodal_factor_t calculate_node_factor) noexcept
       : WaveInterface(ident, type),
         calculate_node_factor_(calculate_node_factor),
         argument_({darwin.t, darwin.s, darwin.h, darwin.p, darwin.n, darwin.p1,
                    darwin.shift, darwin.eps, darwin.nu, darwin.nuprim,
                    darwin.nusec}),
-        freq_(detail::math::radians(frequency(darwin.t, darwin.s, darwin.h,
-                                              darwin.p, darwin.n, darwin.p1))) {
-    is_inferred_ = is_inferred;
-  }
+        freq_(detail::math::radians(frequency(
+            darwin.t, darwin.s, darwin.h, darwin.p, darwin.n, darwin.p1))) {}
 
-  /// @brief Gets the frequency.
-  /// @param unit The frequency unit.
-  /// @return The frequency in radians per hour or degrees per hour.
-  inline auto frequency(const FrequencyUnit& unit) const noexcept
-      -> double final {
-    if (unit == kRadian) {
-      return freq_;
-    }
-    return detail::math::degrees(freq_);
+  /// @brief Gets the frequency in radians per hour.
+  /// @return The frequency in radians per hour.
+  auto frequency() const noexcept -> double final {
+    return freq_;
   }
 
   /// @brief Clones the wave.

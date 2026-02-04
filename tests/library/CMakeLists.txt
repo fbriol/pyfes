@@ -9,7 +9,7 @@ macro(ADD_TESTCASE testname)
   set(FILES "${CMAKE_CURRENT_SOURCE_DIR}/${testname}.cpp")
   add_executable(test_${testname} ${FILES})
   target_include_directories(test_${testname}
-                             PRIVATE ${CMAKE_BINARY_DIR}/include)
+                             PRIVATE ${CMAKE_SOURCE_DIR}/include)
   target_link_libraries(test_${testname} GTest::gtest_main ${ARGN})
   add_test(NAME test_${testname}
            COMMAND ${EXECUTABLE_OUTPUT_PATH}/test_${testname})
@@ -18,4 +18,5 @@ macro(ADD_TESTCASE testname)
   endif()
 endmacro()
 
-add_subdirectory(enum_map)
+add_subdirectory(angle)
+add_subdirectory(darwin)

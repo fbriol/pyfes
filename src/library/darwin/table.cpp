@@ -9,12 +9,13 @@
 #include "fes/constituent.hpp"
 #include "fes/darwin/constituent.hpp"
 #include "fes/darwin/wave.hpp"
-#include "fes/interface.hpp"
+#include "fes/interface/wave.hpp"
+#include "fes/interface/wave_table.hpp"
 
 namespace fes {
 namespace darwin {
 
-auto WaveTable::wave_factory_impl(ConstituentId ident)
+static auto wave_factory(ConstituentId ident)
     -> std::unique_ptr<WaveInterface> {
   switch (ident) {
     case kO1:
@@ -223,7 +224,7 @@ auto WaveTable::wave_factory_impl(ConstituentId ident)
 
 // Builds the list of constituent identifiers from the optional list of names
 static auto build_constituent_ids(
-    const boost::optional<std::vector<std::string>>& waves)
+    const std::vector<std::string>& waves = {})
     -> std::vector<ConstituentId> {
   auto to_ids = [](const auto& names) {
     std::vector<ConstituentId> result;
@@ -233,128 +234,23 @@ static auto build_constituent_ids(
     return result;
   };
 
-  return waves ? to_ids(*waves) : to_ids(darwin::constituents::known());
+  return waves.empty() ? to_ids(darwin::constituents::known()) : to_ids(waves);
 }
 
-WaveTable::WaveTable(const boost::optional<std::vector<std::string>>& waves)
-    : WaveTableInterface(build_constituent_ids(waves)) {}
+WaveTable::WaveTable() : WaveTableInterface() {
+  populate_map(build_constituent_ids(), wave_factory);
+}
+
+WaveTable::WaveTable(const std::vector<std::string>& names)
+    : WaveTableInterface() {
+  populate_map(build_constituent_ids(names), wave_factory);
+}
 
 auto WaveTable::compute_nodal_corrections(const angle::Astronomic& angles)
     -> void {
   for (auto& item : *this) {
     item.value()->compute_nodal_corrections(angles);
   }
-}
-
-void WaveTable::process_inference() {
-  // Arrays who contains the spline coefficients needed to compute MU2, NU2,
-  // L2, T2 and Lambda2 by admittance.
-  constexpr auto mu2 =
-      std::array<double, 3>{0.069439968323, 0.351535557706, -0.046278307672};
-  constexpr auto nu2 =
-      std::array<double, 3>{-0.006104695053, 0.156878802427, 0.006755704028};
-  constexpr auto l2 =
-      std::array<double, 3>{0.077137765667, -0.051653455134, 0.027869916824};
-  constexpr auto t2 =
-      std::array<double, 3>{0.180480173707, -0.020101177502, 0.008331518844};
-  constexpr auto lda2 =
-      std::array<double, 3>{0.016503557465, -0.013307812292, 0.007753383202};
-
-  // infer additional constituents by admittance DIURNALS (from Richard Ray
-  // perth2 program)
-
-  // from Q1 and O1 (0-1)
-
-  auto* x = (*this)[kQ1].get();
-  auto* y = (*this)[kO1].get();
-  auto* z = (*this)[kK1].get();
-
-  auto set_tide = [](WaveInterface* wave, const std::complex<double>& value) {
-    if (wave->is_inferred()) {
-      wave->set_tide(value);
-    }
-  };
-
-  // 2Q1
-  set_tide((*this)[k2Q1].get(), 0.263 * x->tide() - 0.0252 * y->tide());
-
-  // Sigma1
-  set_tide((*this)[kSigma1].get(), 0.297 * x->tide() - 0.0264 * y->tide());
-
-  // rho1
-  set_tide((*this)[kRho1].get(), 0.164 * x->tide() + 0.0048 * y->tide());
-
-  // from O1 and K1  (1-2)
-
-  // M11
-  set_tide((*this)[kM11].get(), 0.0140 * y->tide() + 0.0101 * z->tide());
-
-  // M12
-  set_tide((*this)[kM12].get(), 0.0389 * y->tide() + 0.0282 * z->tide());
-
-  // CHI1
-  set_tide((*this)[kChi1].get(), 0.0064 * y->tide() + 0.0060 * z->tide());
-
-  // pi1
-  set_tide((*this)[kPi1].get(), 0.0030 * y->tide() + 0.0171 * z->tide());
-
-  // phi1
-  set_tide((*this)[kPhi1].get(), -0.0015 * y->tide() + 0.0152 * z->tide());
-
-  // theta1
-  set_tide((*this)[kTheta1].get(), -0.0065 * y->tide() + 0.0155 * z->tide());
-
-  // J1
-  set_tide((*this)[kJ1].get(), -0.0389 * y->tide() + 0.0836 * z->tide());
-
-  // OO1
-  set_tide((*this)[kOO1].get(), -0.0431 * y->tide() + 0.0613 * z->tide());
-
-  // infer additional constituents by admittance SEMI-DIURNALS
-  // (from Richard Ray perth3 program)
-
-  // from M2 - N2
-  x = (*this)[kN2].get();
-  y = (*this)[kM2].get();
-
-  // 2N2
-  set_tide((*this)[k2N2].get(), 0.264 * x->tide() - 0.0253 * y->tide());
-
-  // SEMI-DIURNAL (from Grenoble to take advantage of 2N2)
-
-  // from 2N2 -N2 (3-4)
-  x = (*this)[k2N2].get();
-  y = (*this)[kN2].get();
-
-  // eps2
-  set_tide((*this)[kEps2].get(), 0.53285 * x->tide() - 0.03304 * y->tide());
-  // from M2 - K2 [5-6]
-  x = (*this)[kN2].get();
-  y = (*this)[kM2].get();
-  z = (*this)[kK2].get();
-
-  // eta2
-  set_tide((*this)[kEta2].get(),
-           -0.0034925 * y->tide() + 0.0831707 * z->tide());
-
-  // from N2 -M2- K2 by spline admittances [see GRL 18[5]:845-848,1991]
-
-  // mu2
-  set_tide((*this)[kMu2].get(),
-           mu2[0] * z->tide() + mu2[1] * x->tide() + mu2[2] * y->tide());
-  // nu2
-  set_tide((*this)[kNu2].get(),
-           nu2[0] * z->tide() + nu2[1] * x->tide() + nu2[2] * y->tide());
-  // lambda2
-  set_tide((*this)[kLambda2].get(),
-           lda2[0] * z->tide() + lda2[1] * x->tide() + lda2[2] * y->tide());
-  // L2
-  set_tide((*this)[kL2].get(),
-           l2[0] * z->tide() + l2[1] * x->tide() + l2[2] * y->tide());
-
-  // T2
-  set_tide((*this)[kT2].get(),
-           t2[0] * z->tide() + t2[1] * x->tide() + t2[2] * y->tide());
 }
 
 }  // namespace darwin

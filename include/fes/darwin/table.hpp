@@ -9,33 +9,26 @@
 #include <memory>
 #include <string>
 #include <vector>
-#include <boost/optional.hpp>
 
-#include "fes/interface.hpp"
+#include "fes/interface/wave_table.hpp"
 
 namespace fes {
 namespace darwin {
 
 /// Properties of tide waves handled by FES models.
-class WaveTable : public WaveTableInterface<WaveTable> {
+class WaveTable : public WaveTableInterface {
  public:
-  /// @brief Build a table from a list of constituent names
-  explicit WaveTable(
-      const boost::optional<std::vector<std::string>>& waves = {});
+  /// @brief Default constructor.
+  explicit WaveTable();
 
-  /// @brief Generates a wave properties from its identifier
-  /// @param[in] ident Wave identifier
-  /// @return Wave properties
-  static auto wave_factory_impl(ConstituentId ident) 
-        -> std::unique_ptr<WaveInterface>;
+  /// @brief Constructor with a list of constituent names.
+  /// @param[in] names List of constituent names.
+  explicit WaveTable(const std::vector<std::string>& names);
 
   /// @brief Computes the nodal corrections for all constituents in the table.
   ///
   /// @param[in] angles Astronomic angles used to compute the nodal corrections.
   auto compute_nodal_corrections(const angle::Astronomic& angles) -> void final;
-
-  /// @brief Computes the missing constituents by inference.
-  auto process_inference() -> void final;
 
   /// @brief Clones the wave table.
   /// @return A unique pointer to the cloned wave table.

@@ -1,0 +1,247 @@
+// Copyright (c) 2026 CNES
+//
+// All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+/// @file include/fes/interface/wave_table.hpp
+/// @brief Wave table interface.
+#pragma once
+
+#include <memory>
+#include <stdexcept>
+#include <string>
+#include <tuple>
+#include <vector>
+
+#include "fes/angle/astronomic.hpp"
+#include "fes/constituent.hpp"
+#include "fes/enum_map.hpp"
+#include "fes/interface/wave.hpp"
+#include "fes/types.hpp"
+
+namespace fes {
+
+/// @brief Map of constituents to wave interfaces.
+using ConstituentMap =
+    EnumMap<ConstituentId, std::unique_ptr<WaveInterface>, kKnownConstituents>;
+
+/// @brief Tidal wave table interface.
+class WaveTableInterface {
+ public:
+  /// @brief Default constructor.
+  WaveTableInterface() = default;
+
+  /// @brief Copy constructor
+  WaveTableInterface(const WaveTableInterface& other) {
+    for (const auto& item : other.map_) {
+      map_.set(item.key(), item.value()->clone());
+    }
+  }
+
+  /// @brief Move constructor
+  WaveTableInterface(WaveTableInterface&& other) noexcept = default;
+
+  /// @brief Copy assignment operator
+  auto operator=(const WaveTableInterface& other) -> WaveTableInterface& {
+    if (this != &other) {
+      map_.clear();
+      for (const auto& item : other.map_) {
+        map_.set(item.key(), item.value()->clone());
+      }
+    }
+    return *this;
+  }
+
+  /// @brief Move assignment operator
+  auto operator=(WaveTableInterface&& other) noexcept
+      -> WaveTableInterface& = default;
+
+  /// @brief Destructor.
+  virtual ~WaveTableInterface() = default;
+
+  /// @brief Clones the wave table.
+  /// @return A unique pointer to the cloned wave table.
+  virtual auto clone() const -> std::unique_ptr<WaveTableInterface> = 0;
+
+  /// Set the tide of a constituent
+  /// @param[in] ident The constituent identifier
+  /// @param[out] value The tide value
+  void set_tide(ConstituentId ident, const Complex& value) {
+    const auto* ptr = map_.get(ident);
+    if (ptr == nullptr) {
+      throw out_of_range(ident);
+    }
+    set_tide(static_cast<ConstituentId>(ident), value);
+  }
+
+  /// @brief Computes the nodal corrections for all constituents in the table.
+  ///
+  /// @param[in] angles Astronomic angles used to compute the nodal corrections.
+  virtual auto compute_nodal_corrections(const angle::Astronomic& angles)
+      -> void = 0;
+
+  /// @brief Get the wave corresponding at the given index.
+  /// @param index The index of the constituent, must be in the range
+  /// [0, size()).
+  /// @return A constant reference to the unique pointer to the wave.
+  inline auto operator[](const size_t index) const
+      -> const std::unique_ptr<WaveInterface>& {
+    return map_[index];
+  }
+
+  /// @brief Get the wave corresponding at the given index.
+  /// @param index The index of the constituent, must be in the range
+  /// [0, size()).
+  /// @return A reference to the unique pointer to the wave.
+  inline auto operator[](const size_t index)
+      -> std::unique_ptr<WaveInterface>& {
+    return map_[index];
+  }
+
+  /// @brief Get the wave corresponding to the given constituent identifier.
+  /// @param ident The constituent identifier.
+  /// @return A constant reference to the unique pointer to the wave.
+  inline auto operator[](ConstituentId ident) const
+      -> const std::unique_ptr<WaveInterface>& {
+    const auto* ptr = map_.get(ident);
+    if (ptr == nullptr) {
+      throw out_of_range(ident);
+    }
+    return *ptr;
+  }
+
+  /// @brief Get the wave corresponding to the given constituent identifier.
+  /// @param ident The constituent identifier.
+  /// @return A reference to the unique pointer to the wave.
+  inline auto operator[](ConstituentId ident)
+      -> std::unique_ptr<WaveInterface>& {
+    auto* ptr = map_.get(ident);
+    if (ptr == nullptr) {
+      throw out_of_range(ident);
+    }
+    return *ptr;
+  }
+
+  /// @brief Returns an iterator to the beginning of the wave table
+  /// @return An iterator to the beginning of the wave table
+  inline auto begin() const noexcept -> ConstituentMap::const_iterator {
+    return map_.begin();
+  }
+
+  /// @brief Returns an iterator to the end of the wave table
+  /// @return An iterator to the end of the wave table
+  inline auto end() const noexcept -> ConstituentMap::const_iterator {
+    return map_.end();
+  }
+
+  /// @brief Returns an iterator to the beginning of the wave table
+  /// @return An iterator to the beginning of the wave table
+  inline auto begin() noexcept -> ConstituentMap::iterator {
+    return map_.begin();
+  }
+
+  /// @brief Returns an iterator to the end of the wave table
+  /// @return An iterator to the end of the wave table
+  inline auto end() noexcept -> ConstituentMap::iterator { return map_.end(); }
+
+  /// @brief Gets the list of constituent names in the table
+  /// @return The list of constituent names in the table
+  inline auto constituents() const -> std::vector<std::string> {
+    auto names = std::vector<std::string>();
+    names.reserve(map_.size());
+    for (const auto& item : map_) {
+      names.emplace_back(item.value()->name());
+    }
+    return names;
+  }
+
+  /// @brief Returns the size of the table
+  inline auto size() const noexcept -> size_t { return map_.size(); }
+
+  /// @brief Return the list of tidal waves such that their period is more than
+  /// twice the duration of the time series analyzed
+  ///
+  /// @param[in] duration Duration of the time series analyzed in seconds
+  /// @param[in] f Number of times the period of the wave is greater than
+  /// the duration of the time series analyzed
+  /// @return List of selected tidal waves.
+  auto select_waves_for_analysis(double duration, double f = 2.0)
+      -> std::vector<std::string>;
+
+  /// @brief Calculate the tide of a given time series.
+  ///
+  /// @param[in] epoch Desired UTC time expressed in number of seconds elapsed
+  /// since 1970-01-01T00:00:00.
+  /// @param[in] wave Tidal wave properties computed by an harmonic analysis.
+  /// @return the tide at the given time.
+  /// @param[in] formulae The formulae used to compute the astronomical angles.
+  /// @return the tide at the given time.
+  auto tide_from_tide_series(
+      const Eigen::Ref<const Eigen::VectorXd>& epoch,
+      const Eigen::Ref<const Eigen::VectorXcd>& wave,
+      const angle::Formulae& formulae = angle::Formulae::kSchuremanOrder3) const
+      -> Eigen::VectorXd;
+
+  /// @brief Calculate the tide for a given date from a grid describing the
+  /// properties of tidal waves over an area.
+  ///
+  /// @param[in] epoch Desired UTC time expressed in number of seconds elapsed
+  /// since 1970-01-01T00:00:00.
+  /// @param[in] wave Tidal wave properties computed by an harmonic analysis.
+  /// @param[in] formulae The formulae used to compute the astronomical angles.
+  /// @param[in] num_threads Number of threads to use for the computation. If
+  /// set to 0, the number of threads is automatically determined.
+  auto tide_from_mapping(
+      double epoch, const DynamicRef<const Eigen::MatrixXcd>& wave,
+      const angle::Formulae& formulae = angle::Formulae::kSchuremanOrder3,
+      size_t num_threads = 0) const -> Eigen::MatrixXd;
+
+  /// @brief Compute nodal modulations for amplitude and phase.
+  ///
+  /// @param[in] epoch: Desired UTC time expressed in number of seconds elapsed
+  /// since 1970-01-01T00:00:00.
+  /// @param[in] formulae The formulae used to compute the astronomical angles.
+  /// @return The nodal correction for amplitude, v greenwich argument) + u
+  /// (nodal correction for phase).
+  /// @throw std::invalid_argument if the size of the epoch vector is not
+  /// equal to the size of the leap seconds vector.
+  auto compute_nodal_modulations(const Eigen::Ref<const Eigen::VectorXd>& epoch,
+                                 const angle::Formulae& formulae) const
+      -> std::tuple<Eigen::MatrixXd, Eigen::MatrixXd>;
+
+  /// @brief Check if a constituent is in the table
+  /// @param[in] ident The constituent identifier
+  /// @return true if the constituent is in the table
+  inline auto contains(const ConstituentId ident) const noexcept -> bool {
+    return map_.contains(ident);
+  }
+
+ protected:
+  /// @brief Type for wave factory functions.
+  using WaveFactoryFunction = std::unique_ptr<WaveInterface> (*)(ConstituentId);
+
+  /// @brief Polpulate the table with the given constituents using the provided
+  /// wave factory function. Call this in derived class constructors after
+  /// get_factory() is available.
+  /// @param constituents List of constituent identifiers to include in the
+  /// table
+  void populate_map(const std::vector<ConstituentId>& constituents,
+                    const WaveFactoryFunction& wave_factory) {
+    for (const auto& ident : constituents) {
+      map_.set(ident, wave_factory(ident));
+    }
+  }
+
+ private:
+  ConstituentMap map_;  ///< Map of constituents
+
+  /// @brief Generates an out_of_range exception for a missing constituent.
+  /// @param ident The constituent identifier.
+  /// @return The out_of_range exception.
+  auto out_of_range(ConstituentId ident) const -> std::out_of_range {
+    return std::out_of_range("Constituent ID#" +
+                             std::to_string(static_cast<uint8_t>(ident)) +
+                             " not found in the wave table.");
+  }
+};
+
+}  // namespace fes

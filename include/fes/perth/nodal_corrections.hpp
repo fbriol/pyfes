@@ -9,6 +9,7 @@
 #include <vector>
 
 #include "fes/constituent.hpp"
+#include "fes/interface/wave.hpp"
 
 namespace fes {
 namespace perth {
@@ -35,7 +36,7 @@ struct NodalCorrections {
 ///   corrections.
 /// @return A vector of NodalCorrections for each constituent.
 auto evaluate_nodal_corrections(double omega, double p,
-                                const std::vector<ConstituentId> &constituents)
+                                const std::vector<ConstituentId>& constituents)
     -> std::vector<NodalCorrections>;
 
 /// @brief Compute nodal corrections for a single constituent.
@@ -70,7 +71,7 @@ inline auto evaluate_nodal_correction(double omega, double p,
 /// @return A vector of NodalCorrections for each constituent.
 auto evaluate_nodal_corrections(double perihelion, double omega, double perigee,
                                 double hsolar,
-                                const std::vector<ConstituentId> &constituents)
+                                const std::vector<ConstituentId>& constituents)
     -> std::vector<NodalCorrections>;
 
 /// @brief Compute group modulation nodal corrections for a single constituent.
@@ -88,6 +89,30 @@ inline auto evaluate_nodal_correction(double perihelion, double omega,
   return evaluate_nodal_corrections(perihelion, omega, perigee, hsolar,
                                     {constituent})[0];
 }
+
+/// @brief Helper class to evaluate nodal corrections from arguments.
+class NodalCorrectionProcessor {
+  double omega_;
+  double perigee_;
+  double hsolar_;
+  double psolar_;
+  bool group_modulations_;
+
+ public:
+  /// @brief Constructs nodal correction parameters from arguments.
+  explicit NodalCorrectionProcessor(const NodalCorrectionsArgs& args);
+
+  /// @brief Evaluates nodal corrections for a single constituent.
+  /// @param[in] ident Constituent identifier.
+  /// @return Nodal corrections {f, u}.
+  auto operator()(ConstituentId ident) const -> NodalCorrections;
+
+  /// @brief Evaluates nodal corrections for a list of constituents.
+  /// @param[in] ids Vector of constituent identifiers.
+  /// @return Vector of Nodal corrections {f, u}.
+  auto operator()(const std::vector<ConstituentId>& ids) const
+      -> std::vector<NodalCorrections>;
+};
 
 }  // namespace perth
 }  // namespace fes

@@ -3,6 +3,7 @@
 #include <cmath>
 
 #include "fes/detail/math.hpp"
+#include "fes/perth/doodson.hpp"
 
 namespace fes {
 namespace perth {
@@ -12,7 +13,7 @@ using detail::math::pow;
 using detail::math::radians;
 
 auto evaluate_nodal_corrections(double omega, double p,
-                               const std::vector<ConstituentId> &constituents)
+                                const std::vector<ConstituentId> &constituents)
     -> std::vector<NodalCorrections> {
   const auto sinn = std::sin(radians(omega));
   const auto cosn = std::cos(radians(omega));
@@ -264,8 +265,8 @@ auto evaluate_nodal_corrections(double omega, double p,
 }
 
 auto evaluate_nodal_corrections(double perihelion, double omega, double perigee,
-                               double hsolar,
-                               const std::vector<ConstituentId> &constituents)
+                                double hsolar,
+                                const std::vector<ConstituentId> &constituents)
     -> std::vector<NodalCorrections> {
   auto h = radians(hsolar);
   auto p = radians(perigee);
@@ -469,6 +470,32 @@ auto evaluate_nodal_corrections(double perihelion, double omega, double perigee,
     }
   }
   return corrections;
+}
+
+NodalCorrectionProcessor::NodalCorrectionProcessor(
+    const NodalCorrectionsArgs &args) {
+  auto doodson_args = calculate_celestial_vector(args.angles());
+  omega_ = -doodson_args(4);
+  perigee_ = doodson_args(3);
+  hsolar_ = doodson_args(2);
+  psolar_ = doodson_args(5);
+  group_modulations_ = args.group_modulations();
+}
+
+auto NodalCorrectionProcessor::operator()(ConstituentId ident) const
+    -> NodalCorrections {
+  if (group_modulations_) {
+    return evaluate_nodal_correction(psolar_, omega_, perigee_, hsolar_, ident);
+  }
+  return evaluate_nodal_correction(omega_, perigee_, ident);
+}
+
+auto NodalCorrectionProcessor::operator()(const std::vector<ConstituentId> &ids)
+    const -> std::vector<NodalCorrections> {
+  if (group_modulations_) {
+    return evaluate_nodal_corrections(psolar_, omega_, perigee_, hsolar_, ids);
+  }
+  return evaluate_nodal_corrections(omega_, perigee_, ids);
 }
 
 }  // namespace perth

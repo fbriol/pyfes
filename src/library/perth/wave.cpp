@@ -12,23 +12,11 @@ namespace fes {
 namespace perth {
 
 auto Wave::compute_nodal_corrections(const NodalCorrectionsArgs& args) -> void {
-  auto& angle = args.angles();
-  auto doodson_args = calculate_celestial_vector(angle);
-  const auto perigee = doodson_args(3);
-  const auto omega = -doodson_args(4);
-  if (args.group_modulations()) {
-    const auto hsolar = doodson_args(2);
-    const auto psolar = doodson_args(5);
-    auto nodal_corrections =
-        evaluate_nodal_correction(psolar, omega, perigee, hsolar, ident());
-    f_ = nodal_corrections.f;
-    u_ = nodal_corrections.u;
-  } else {
-    auto nodal_corrections = evaluate_nodal_correction(omega, perigee, ident());
-    f_ = nodal_corrections.f;
-    u_ = nodal_corrections.u;
-  }
-  v_ = calculate_doodson_argument(angle, doodson_numbers_.cast<double>());
+  auto nc = NodalCorrectionProcessor(args)(ident());
+  f_ = nc.f;
+  u_ = nc.u;
+  v_ = calculate_doodson_argument(args.angles(),
+                                  doodson_numbers_.cast<double>());
 }
 
 namespace wave {

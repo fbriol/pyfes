@@ -212,29 +212,15 @@ WaveTable::WaveTable(const std::vector<std::string>& names)
 
 auto WaveTable::compute_nodal_corrections(const NodalCorrectionsArgs& args)
     -> void {
-  const auto& angles = args.angles();
-  auto doodson_args = calculate_celestial_vector(angles);
-  const auto perigee = doodson_args(3);
-  const auto omega = -doodson_args(4);
-  std::vector<NodalCorrections> nodal_corrections;
   auto constituent_ids = this->constituent_ids();
-  if (args.group_modulations()) {
-    const auto hsolar = doodson_args(2);
-    const auto psolar = doodson_args(5);
-    nodal_corrections = evaluate_nodal_corrections(psolar, omega, perigee,
-                                                   hsolar, constituent_ids);
-  } else {
-    nodal_corrections =
-        evaluate_nodal_corrections(omega, perigee, constituent_ids);
-  }
+  auto nodal_corrections = NodalCorrectionProcessor(args)(constituent_ids);
+
   for (size_t ix = 0; ix < constituent_ids.size(); ++ix) {
-    const auto key = constituent_ids[ix];
-    const auto nodal_correction = nodal_corrections[ix];
-    auto& component = (*this)[key];
+    auto& component = (*this)[constituent_ids[ix]];
     auto tidal_argument = calculate_doodson_argument(
-        angles, component->doodson_numbers().template cast<double>());
-    component->set_nodal_corrections(nodal_correction.f, nodal_correction.u,
-                                     tidal_argument);
+        args.angles(), component->doodson_numbers().template cast<double>());
+    component->set_nodal_corrections(nodal_corrections[ix].f,
+                                     nodal_corrections[ix].u, tidal_argument);
   }
 }
 

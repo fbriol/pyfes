@@ -20,3 +20,4 @@ endmacro()
 
 add_subdirectory(angle)
 add_subdirectory(darwin)
+add_subdirectory(perth)

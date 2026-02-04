@@ -1,0 +1,15 @@
+CompileFlags:
+    Compiler: clang++
+    Add:
+        - "-std=c++14"
+
+Diagnostics:
+    ClangTidy:
+        Add:
+            - boost-*
+            - concurrency-*
+            - modernize-*
+            - performance-*
+            - clang-analyzer-*
+            - portability-*
+            - google-*

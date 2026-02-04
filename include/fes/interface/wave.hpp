@@ -8,6 +8,7 @@
 
 #include <memory>
 #include <string>
+#include <type_traits>
 
 #include "fes/angle/astronomic.hpp"
 #include "fes/constituent.hpp"
@@ -34,6 +35,40 @@ constexpr auto frequency_scale() noexcept -> double {
 enum WaveType : uint8_t {
   kLongPeriod,  //!< Long period tidal waves
   kShortPeriod  //!< Short period tidal waves
+};
+
+/// @brief Arguments required to compute nodal corrections.
+class NodalCorrectionsArgs {
+  /// Astronomic angles used to compute the nodal corrections
+  angle::Astronomic angles_;
+
+  /// Whether to group modulations
+  bool group_modulations_{false};
+
+ public:
+  /// @brief Constructor.
+  /// @param[in] angles Astronomic angles used to compute the nodal corrections.
+  explicit constexpr NodalCorrectionsArgs(const angle::Astronomic& angles,
+                                          bool group_modulations = false)
+      : angles_(angles), group_modulations_(group_modulations) {}
+
+  /// @brief Gets the astronomic angles.
+  /// @return The astronomic angles.
+  constexpr auto angles() const noexcept -> const angle::Astronomic& {
+    return angles_;
+  }
+
+  /// @brief Whether to group modulations together when computing nodal
+  /// corrections.
+  /// @return Whether to group modulations together when computing nodal
+  /// corrections.
+  constexpr auto group_modulations() const noexcept -> bool {
+    return group_modulations_;
+  }
+
+  /// Gets the mutable astronomic angles.
+  /// @return The mutable astronomic angles.
+  constexpr auto angles() noexcept -> angle::Astronomic& { return angles_; }
 };
 
 /// @brief Tidal wave interface.
@@ -120,9 +155,19 @@ class WaveInterface {
     return std::fmod(v_ + u_, detail::math::two_pi<double>());
   }
 
+  /// @brief Sets the nodal corrections directly (for bulk updates with known values).
+  /// @param f Nodal correction for amplitude.
+  /// @param u Nodal correction for phase.
+  /// @param v Greenwich argument.
+  constexpr void set_nodal_corrections(double f, double u, double v) noexcept {
+    f_ = f;
+    u_ = u;
+    v_ = v;
+  }
+
   /// @brief Computes the nodal corrections for the wave.
-  /// @param[in] angles Astronomic angles used to compute the nodal corrections.
-  virtual auto compute_nodal_corrections(const angle::Astronomic& angles)
+  /// @param[in] args Arguments required to compute the nodal corrections.
+  virtual auto compute_nodal_corrections(const NodalCorrectionsArgs& args)
       -> void = 0;
 
   /// Gets the XDO numerical representation of the wave

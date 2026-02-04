@@ -75,8 +75,8 @@ class WaveTableInterface {
 
   /// @brief Computes the nodal corrections for all constituents in the table.
   ///
-  /// @param[in] angles Astronomic angles used to compute the nodal corrections.
-  virtual auto compute_nodal_corrections(const angle::Astronomic& angles)
+  /// @param[in] args Arguments required to compute the nodal corrections.
+  virtual auto compute_nodal_corrections(const NodalCorrectionsArgs& args)
       -> void = 0;
 
   /// @brief Get the wave corresponding at the given index.
@@ -154,6 +154,17 @@ class WaveTableInterface {
     return names;
   }
 
+  /// Get the list of constituent identifiers in the table
+  /// @return The list of constituent identifiers in the table
+  inline auto constituent_ids() const -> std::vector<ConstituentId> {
+    auto ids = std::vector<ConstituentId>();
+    ids.reserve(map_.size());
+    for (const auto& item : map_) {
+      ids.emplace_back(item.key());
+    }
+    return ids;
+  }
+
   /// @brief Returns the size of the table
   inline auto size() const noexcept -> size_t { return map_.size(); }
 
@@ -173,12 +184,10 @@ class WaveTableInterface {
   /// since 1970-01-01T00:00:00.
   /// @param[in] wave Tidal wave properties computed by an harmonic analysis.
   /// @return the tide at the given time.
-  /// @param[in] formulae The formulae used to compute the astronomical angles.
-  /// @return the tide at the given time.
-  auto tide_from_tide_series(
-      const Eigen::Ref<const Eigen::VectorXd>& epoch,
-      const Eigen::Ref<const Eigen::VectorXcd>& wave,
-      const angle::Formulae& formulae = angle::Formulae::kSchuremanOrder3) const
+  /// @param[in] args Arguments required to compute the nodal corrections.
+  auto tide_from_tide_series(const Eigen::Ref<const Eigen::VectorXd>& epoch,
+                             const Eigen::Ref<const Eigen::VectorXcd>& wave,
+                             NodalCorrectionsArgs& args) const
       -> Eigen::VectorXd;
 
   /// @brief Calculate the tide for a given date from a grid describing the
@@ -187,25 +196,25 @@ class WaveTableInterface {
   /// @param[in] epoch Desired UTC time expressed in number of seconds elapsed
   /// since 1970-01-01T00:00:00.
   /// @param[in] wave Tidal wave properties computed by an harmonic analysis.
-  /// @param[in] formulae The formulae used to compute the astronomical angles.
+  /// @param[in] args Arguments required to compute the nodal corrections.
   /// @param[in] num_threads Number of threads to use for the computation. If
   /// set to 0, the number of threads is automatically determined.
-  auto tide_from_mapping(
-      double epoch, const DynamicRef<const Eigen::MatrixXcd>& wave,
-      const angle::Formulae& formulae = angle::Formulae::kSchuremanOrder3,
-      size_t num_threads = 0) const -> Eigen::MatrixXd;
+  auto tide_from_mapping(double epoch,
+                         const DynamicRef<const Eigen::MatrixXcd>& wave,
+                         NodalCorrectionsArgs& args,
+                         size_t num_threads = 0) const -> Eigen::MatrixXd;
 
   /// @brief Compute nodal modulations for amplitude and phase.
   ///
   /// @param[in] epoch: Desired UTC time expressed in number of seconds elapsed
   /// since 1970-01-01T00:00:00.
-  /// @param[in] formulae The formulae used to compute the astronomical angles.
+  /// @param[in] args Arguments required to compute the nodal corrections.
   /// @return The nodal correction for amplitude, v greenwich argument) + u
   /// (nodal correction for phase).
   /// @throw std::invalid_argument if the size of the epoch vector is not
   /// equal to the size of the leap seconds vector.
   auto compute_nodal_modulations(const Eigen::Ref<const Eigen::VectorXd>& epoch,
-                                 const angle::Formulae& formulae) const
+                                 NodalCorrectionsArgs& args) const
       -> std::tuple<Eigen::MatrixXd, Eigen::MatrixXd>;
 
   /// @brief Check if a constituent is in the table

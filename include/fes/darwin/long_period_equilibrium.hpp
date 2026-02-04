@@ -7,7 +7,7 @@
 #pragma once
 #include <Eigen/Core>
 
-#include "fes/darwin/table.hpp"
+#include "fes/darwin/wave_table.hpp"
 
 namespace fes {
 namespace darwin {

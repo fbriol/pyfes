@@ -2,7 +2,7 @@
 //
 // All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-#include "fes/darwin/table.hpp"
+#include "fes/darwin/wave_table.hpp"
 
 #include <memory>
 
@@ -223,8 +223,7 @@ static auto wave_factory(ConstituentId ident)
 }
 
 // Builds the list of constituent identifiers from the optional list of names
-static auto build_constituent_ids(
-    const std::vector<std::string>& waves = {})
+static auto build_constituent_ids(const std::vector<std::string>& waves = {})
     -> std::vector<ConstituentId> {
   auto to_ids = [](const auto& names) {
     std::vector<ConstituentId> result;
@@ -246,10 +245,10 @@ WaveTable::WaveTable(const std::vector<std::string>& names)
   populate_map(build_constituent_ids(names), wave_factory);
 }
 
-auto WaveTable::compute_nodal_corrections(const angle::Astronomic& angles)
+auto WaveTable::compute_nodal_corrections(const NodalCorrectionsArgs& args)
     -> void {
   for (auto& item : *this) {
-    item.value()->compute_nodal_corrections(angles);
+    item.value()->compute_nodal_corrections(args);
   }
 }
 

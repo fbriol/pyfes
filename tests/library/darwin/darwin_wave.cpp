@@ -2,11 +2,11 @@
 //
 // All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-#include "fes/darwin/wave.hpp"
-
 #include <gtest/gtest.h>
 
-#include "fes/darwin/table.hpp"
+#include "fes/darwin/wave_table.hpp"
+#include "fes/darwin/wave.hpp"
+#include "fes/interface/wave.hpp"
 
 namespace fes {
 namespace darwin {
@@ -535,13 +535,15 @@ inline auto check_nodal_amplitude(const WaveTable& table) {
 
 TEST(Wave, NodalPhase) {
   auto table = WaveTable();
-  table.compute_nodal_corrections(AstronomicAngleForNodalG());
+  table.compute_nodal_corrections(
+      NodalCorrectionsArgs(AstronomicAngleForNodalG()));
   check_nodal_phase(table);
 }
 
 TEST(Wave, NodalAmplitude) {
   auto table = WaveTable();
-  table.compute_nodal_corrections(AstronomicAngleForNodalA());
+  table.compute_nodal_corrections(
+      NodalCorrectionsArgs(AstronomicAngleForNodalA()));
   check_nodal_amplitude(table);
 }
 

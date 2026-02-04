@@ -2,8 +2,8 @@
 //
 // All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-/// @file include/fes/darwin/table.hpp
-/// @brief Table of tidal constituents handled by FES models.
+/// @file include/fes/perth/wave_table.hpp
+/// @brief Table of tidal constituents handled by PERTH models.
 #pragma once
 
 #include <memory>
@@ -13,9 +13,9 @@
 #include "fes/interface/wave_table.hpp"
 
 namespace fes {
-namespace darwin {
+namespace perth {
 
-/// Properties of tide waves handled by FES models.
+/// Properties of tide waves handled by PERTH models.
 class WaveTable : public WaveTableInterface {
  public:
   /// @brief Default constructor.
@@ -27,8 +27,8 @@ class WaveTable : public WaveTableInterface {
 
   /// @brief Computes the nodal corrections for all constituents in the table.
   ///
-  /// @param[in] angles Astronomic angles used to compute the nodal corrections.
-  auto compute_nodal_corrections(const angle::Astronomic& angles) -> void final;
+  /// @param[in] args Arguments required to compute the nodal corrections.
+  auto compute_nodal_corrections(const NodalCorrectionsArgs& args) -> void final;
 
   /// @brief Clones the wave table.
   /// @return A unique pointer to the cloned wave table.
@@ -37,5 +37,5 @@ class WaveTable : public WaveTableInterface {
   }
 };
 
-}  // namespace darwin
+}  // namespace perth
 }  // namespace fes

@@ -11,6 +11,7 @@
 #include <vector>
 
 #include "fes/detail/parallel_for.hpp"
+#include "fes/interface/wave.hpp"
 
 namespace fes {
 
@@ -32,7 +33,7 @@ auto WaveTableInterface::select_waves_for_analysis(const double duration,
 auto WaveTableInterface::tide_from_tide_series(
     const Eigen::Ref<const Eigen::VectorXd>& epoch,
     const Eigen::Ref<const Eigen::VectorXcd>& wave,
-    const angle::Formulae& formulae) const -> Eigen::VectorXd {
+    NodalCorrectionsArgs& args) const -> Eigen::VectorXd {
   if (static_cast<size_t>(wave.rows()) != size()) {
     throw std::invalid_argument(
         "wave must contain as many elements as the number of waves in the "
@@ -41,7 +42,7 @@ auto WaveTableInterface::tide_from_tide_series(
   auto result = Eigen::VectorXd(epoch.rows());
 
   /// The object responsible for the calculation of astronomical angles.
-  auto angles = angle::Astronomic(formulae);
+  auto& angles = args.angles();
 
   // The wave properties of the object must be immutable for the provided
   // instance.
@@ -50,7 +51,7 @@ auto WaveTableInterface::tide_from_tide_series(
   for (auto ix = 0; ix < epoch.rows(); ++ix) {
     double tide = 0;
     angles.update(epoch(ix));
-    wt->compute_nodal_corrections(angles);
+    wt->compute_nodal_corrections(args);
 
     for (size_t jx = 0; jx < wt->size(); ++jx) {
       const auto& item = (*wt)[jx];
@@ -68,7 +69,7 @@ auto WaveTableInterface::tide_from_tide_series(
 
 auto WaveTableInterface::tide_from_mapping(
     const double epoch, const DynamicRef<const Eigen::MatrixXcd>& wave,
-    const angle::Formulae& formulae, const size_t num_threads) const
+    NodalCorrectionsArgs& args, const size_t num_threads) const
     -> Eigen::MatrixXd {
   if (static_cast<size_t>(wave.rows()) != size()) {
     throw std::invalid_argument(
@@ -80,8 +81,8 @@ auto WaveTableInterface::tide_from_mapping(
     // The wave properties of the object must be immutable for the provided
     // instance.
     auto wt = clone();
-    wt->compute_nodal_corrections(angle::Astronomic(formulae, epoch));
-
+    args.angles().update(epoch);
+    wt->compute_nodal_corrections(args);
     for (auto ix = start; ix < end; ++ix) {
       for (size_t jx = 0; jx < wt->size(); ++jx) {
         const auto& item = (*wt)[jx];
@@ -100,13 +101,13 @@ auto WaveTableInterface::tide_from_mapping(
 
 auto WaveTableInterface::compute_nodal_modulations(
     const Eigen::Ref<const Eigen::VectorXd>& epoch,
-    const angle::Formulae& formulae) const
+    NodalCorrectionsArgs& args) const
     -> std::tuple<Eigen::MatrixXd, Eigen::MatrixXd> {
   auto f = Eigen::MatrixXd(size(), epoch.size());
   auto vu = Eigen::MatrixXd(size(), epoch.size());
 
   /// The object responsible for the calculation of astronomical angles.
-  auto angles = angle::Astronomic(formulae);
+  auto& angles = args.angles();
 
   // The wave properties of the object must be immutable for the provided
   // instance.
@@ -114,7 +115,7 @@ auto WaveTableInterface::compute_nodal_modulations(
 
   for (auto ix = 0; ix < epoch.size(); ++ix) {
     angles.update(epoch(ix));
-    wt->compute_nodal_corrections(angles);
+    wt->compute_nodal_corrections(args);
     for (size_t jx = 0; jx < wt->size(); ++jx) {
       const auto& wave = (*wt)[jx];
       f(jx, ix) = wave->f();

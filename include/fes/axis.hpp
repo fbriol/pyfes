@@ -7,7 +7,6 @@
 #pragma once
 #include <Eigen/Core>
 #include <boost/optional.hpp>
-#include <limits>
 #include <memory>
 #include <sstream>
 #include <tuple>

@@ -66,11 +66,11 @@ class WaveTableInterface {
   /// @param[in] ident The constituent identifier
   /// @param[out] value The tide value
   void set_tide(ConstituentId ident, const Complex& value) {
-    const auto* ptr = map_.get(ident);
+    auto* ptr = map_.get(ident)->get();
     if (ptr == nullptr) {
       throw out_of_range(ident);
     }
-    set_tide(static_cast<ConstituentId>(ident), value);
+    ptr->set_tide(value);
   }
 
   /// @brief Computes the nodal corrections for all constituents in the table.

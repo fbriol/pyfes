@@ -19,7 +19,7 @@ constexpr size_t kNumConstituents = 80;
 
 /// @brief Returns all the tidal constituents handled by the library.
 /// @return Tidal constituents.
-constexpr auto kAll = std::array<ConstituentId, kNumConstituents>{
+constexpr auto kAllConstituents = std::array<ConstituentId, kNumConstituents>{
     kNode,   kSa1,   kSa,      kSsa,  kSta,  kMSm,    kMm,     kMSf,  kMf,
     kMStm,   kMtm,   kMSqm,    kMqm,  k2Q1,  kSigma1, kQ1,     kRho1, kO1,
     kTau1,   kBeta1, kM13,     kM1,   kChi1, kPi1,    kP1,     kS1,   kK1,
@@ -38,20 +38,20 @@ namespace constituents {
 /// @param[in] name Tide constituent name.
 /// @return Tidal constituent.
 inline auto parse(const std::string& name) -> ConstituentId {
-  return fes::constituents::parse(name, kAll);
+  return fes::constituents::parse(name, kAllConstituents);
 }
 
 /// @brief Get the tidal constituent name from its identifier.
 /// @param[in] ident Tide constituent identifier.
 /// @return Tidal constituent name.
 inline auto name(const ConstituentId ident) -> std::string {
-  return fes::constituents::name(ident, kAll);
+  return fes::constituents::name(ident, kAllConstituents);
 }
 
 /// @brief Get the tidal constituent names handled by the library.
 /// @return Tidal constituent names.
 inline auto known() -> std::array<std::string, kNumConstituents> {
-  return fes::constituents::known(kAll);
+  return fes::constituents::known(kAllConstituents);
 }
 
 }  // namespace constituents

@@ -54,7 +54,11 @@ class PerthInference : public Inference<PerthInference> {
   /// @brief Constructor.
   /// @param[in] wave_table The wave table containing the waves used for
   /// inference.
-  /// @param[in] interpolation_type The type of interpolation to use.
+  /// @param[in] interpolation_type The type of interpolation to use, for
+  /// diurnal and semidiurnal constituents. The default is linear admittance.
+  /// @note Long-period constituents are always interpolated using linear
+  /// admittance, except when the interpolation type is set to zero admittance,
+  /// in which case they are not inferred.
   explicit PerthInference(const WaveTableInterface& wave_table,
                           const InterpolationType interpolation_type =
                               InterpolationType::kLinearAdmittance);
@@ -115,6 +119,7 @@ class PerthInference : public Inference<PerthInference> {
 
   Interpolator interpolation_1_;  ///< Interpolation function for diurnal.
   Interpolator interpolation_2_;  ///< Interpolation function for semidiurnal.
+  Interpolator interpolation_3_;  ///< Interpolation function for long-period.
 
   /// @brief Returns inphase/quad components of the 18.6-y equilibrium node
   /// tide. This is used only if inference is requested but the node tide is
@@ -284,7 +289,8 @@ auto populate_and_sort_inferred(
     const auto ampl = item.second;
     const auto doodson_number =
         wave_table[ident]->doodson_numbers().head(6).template cast<double>();
-    mutable_inferred[ident] = {perth::tidal_frequency(doodson_number), ampl};
+    mutable_inferred.insert(ident,
+                            {perth::tidal_frequency(doodson_number), ampl});
     keys.push_back(ident);
   }
 
@@ -320,6 +326,22 @@ inline auto linear_interpolation(double x1, const Complex& y1, double x2,
   }
   auto slp = (y3 - y2) / (x3 - x2);
   return y2 + slp * (x - x2);
+}
+
+/// @brief Computes zero admittance interpolation, which always returns zero.
+/// @param[in] x1 Frequency for the first component.
+/// @param[in] y1 Complex admittance for the first component.
+/// @param[in] x2 Frequency for the second component.
+/// @param[in] y2 Complex admittance for the second component.
+/// @param[in] x3 Frequency for the third component.
+/// @param[in] y3 Complex admittance for the third component.
+/// @param[in] x Frequency at which to evaluate the interpolation.
+/// @return The interpolated complex admittance at frequency `x` (always zero).
+constexpr auto zero_admittance(double /*x1*/, const Complex& /*y1*/,
+                               double /*x2*/, const Complex& /*y2*/,
+                               double /*x3*/, const Complex& /*y3*/,
+                               double /*x*/) -> Complex {
+  return {0.0, 0.0};
 }
 
 // ============================================================================
@@ -491,14 +513,26 @@ PerthInference::PerthInference(const WaveTableInterface& wave_table,
   amp8_ = mm.second;
   amp9_ = mf.second;
 
-  if (interpolation_type == InterpolationType::kLinearAdmittance) {
-    interpolation_1_ = linear_interpolation;
-    interpolation_2_ = linear_interpolation;
-  } else if (interpolation_type == InterpolationType::kFourierAdmittance) {
-    interpolation_1_ = fourier_interpolation<1>;
-    interpolation_2_ = fourier_interpolation<2>;
-  } else {
-    throw std::invalid_argument("Unknown interpolation type");
+  // Long period constituents are always computed using linear admittance, like
+  // in the original Perth program.
+  switch (interpolation_type) {
+    case InterpolationType::kZeroAdmittance:
+      interpolation_1_ = zero_admittance;
+      interpolation_2_ = zero_admittance;
+      interpolation_3_ = zero_admittance;
+      break;
+    case InterpolationType::kLinearAdmittance:
+      interpolation_1_ = linear_interpolation;
+      interpolation_2_ = linear_interpolation;
+      interpolation_3_ = linear_interpolation;
+      break;
+    case InterpolationType::kFourierAdmittance:
+      interpolation_1_ = fourier_interpolation<1>;
+      interpolation_2_ = fourier_interpolation<2>;
+      interpolation_3_ = linear_interpolation;
+      break;
+    default:
+      throw std::invalid_argument("Unknown interpolation type");
   }
 }
 
@@ -526,7 +560,7 @@ auto PerthInference::apply_impl(WaveTableInterface& wave_table,
     double fl;
 
     auto& updated_item = *wave_table[constituent];
-    if (!updated_item.is_modeled() || updated_item.type() != kShortPeriod) {
+    if (updated_item.is_modeled() || updated_item.type() != kShortPeriod) {
       continue;  // Skip if the constituent is not computed by inference
     }
     const auto& inferred_item = inferred_diurnal_[constituent];
@@ -543,7 +577,7 @@ auto PerthInference::apply_impl(WaveTableInterface& wave_table,
       continue;  // Skip if the constituent is not in the wave table
     }
     auto& updated_item = *wave_table[constituent];
-    if (!updated_item.is_modeled() || updated_item.type() != kShortPeriod) {
+    if (updated_item.is_modeled() || updated_item.type() != kShortPeriod) {
       continue;  // Skip if the constituent is not computed by inference
     }
     const auto& inferred_item = inferred_semidiurnal_[constituent];
@@ -556,12 +590,11 @@ auto PerthInference::apply_impl(WaveTableInterface& wave_table,
       continue;  // Skip if the constituent is not in the wave table
     }
     auto& updated_item = *wave_table[constituent];
-    if (!updated_item.is_modeled() || updated_item.type() != kLongPeriod) {
+    if (updated_item.is_modeled() || updated_item.type() != kLongPeriod) {
       continue;  // Skip if the constituent is not computed by inference
     }
     const auto& inferred_item = inferred_long_period_[constituent];
-    auto y =
-        linear_interpolation(x7_, y7, x8_, y8, x9_, y9, inferred_item.first);
+    auto y = interpolation_3_(x7_, y7, x8_, y8, x9_, y9, inferred_item.first);
     updated_item.set_tide(y * inferred_item.second);
   }
 }

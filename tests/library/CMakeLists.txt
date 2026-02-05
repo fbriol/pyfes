@@ -18,6 +18,9 @@ macro(ADD_TESTCASE testname)
   endif()
 endmacro()
 
+
+add_testcase(inference fes)
+
 add_subdirectory(angle)
 add_subdirectory(darwin)
 add_subdirectory(perth)

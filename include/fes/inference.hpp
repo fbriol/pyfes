@@ -12,6 +12,7 @@
 #include "fes/constituent.hpp"
 #include "fes/interface/inference.hpp"
 #include "fes/interface/wave.hpp"
+#include "fes/interface/wave_table.hpp"
 #include "fes/map.hpp"
 #include "fes/perth/doodson.hpp"
 #include "fes/perth/love_numbers.hpp"
@@ -19,18 +20,22 @@
 
 namespace fes {
 
+/// @brief Enumeration of inference (admittance) types.
+enum class InferenceType : uint8_t {
+  kSpline,   ///< Spline interpolation of admittances.
+  kZero,     ///< No interpolation of admittances (zero admittance).
+  kLinear,   ///< Piecewise linear interpolation of admittances.
+  kFourier,  ///< Munk-Cartwright Fourier series interpolation of admittances.
+};
+
 /// @brief Compute waves by inference from these 7 major ones : O1, Q1, K1,
 /// 2N2, N2, M2, K2 using spline interpolation.
 class SplineInference : public Inference<SplineInference> {
  public:
   /// @brief Apply inference to compute minor constituents.
-  /// @tparam WaveTableInterfaceDerived The derived type of the wave table
-  /// interface.
   /// @param[in,out] wave_table The wave table to process.
   /// @param[in] lat Latitude in degrees.
-  template <typename WaveTableInterfaceDerived>
-  auto apply_impl(WaveTableInterface<WaveTableInterfaceDerived>& wave_table,
-                  const double lat) -> void;
+  auto apply_impl(WaveTableInterface& wave_table, const double lat) -> void;
 
   /// @brief Returns the list of the tidal constituents inferred by the model.
   /// @return A vector of constituent identifiers.
@@ -47,25 +52,17 @@ enum class InterpolationType : uint8_t {
 class PerthInference : public Inference<PerthInference> {
  public:
   /// @brief Constructor.
-  /// @tparam WaveTableInterfaceDerived The derived type of the wave table
-  /// interface.
   /// @param[in] wave_table The wave table containing the waves used for
   /// inference.
   /// @param[in] interpolation_type The type of interpolation to use.
-  template <typename WaveTableInterfaceDerived>
-  explicit PerthInference(
-      const WaveTableInterface<WaveTableInterfaceDerived>& wave_table,
-      const InterpolationType interpolation_type =
-          InterpolationType::kLinearAdmittance);
+  explicit PerthInference(const WaveTableInterface& wave_table,
+                          const InterpolationType interpolation_type =
+                              InterpolationType::kLinearAdmittance);
 
   /// @brief Apply inference to compute minor constituents.
-  /// @tparam WaveTableInterfaceDerived The derived type of the wave table
-  /// interface.
   /// @param[in,out] wave_table The wave table to process.
   /// @param[in] lat Latitude in degrees.
-  template <typename WaveTableInterfaceDerived>
-  auto apply_impl(WaveTableInterface<WaveTableInterfaceDerived>& wave_table,
-                  const double lat) -> void;
+  auto apply_impl(WaveTableInterface& wave_table, const double lat) -> void;
 
   /// @brief Returns the list of the tidal constituents inferred by the model.
   /// @return A vector of constituent identifiers.
@@ -128,14 +125,32 @@ class PerthInference : public Inference<PerthInference> {
       -> const Complex&;
 };
 
+auto inference_factory(WaveTableInterface& wave_table,
+                       const InferenceType inference_type)
+    -> std::unique_ptr<InferenceInterface> {
+  switch (inference_type) {
+    case InferenceType::kSpline:
+      return std::make_unique<SplineInference>();
+    case InferenceType::kZero:
+      return std::make_unique<PerthInference>(
+          wave_table, InterpolationType::kZeroAdmittance);
+    case InferenceType::kLinear:
+      return std::make_unique<PerthInference>(
+          wave_table, InterpolationType::kLinearAdmittance);
+    case InferenceType::kFourier:
+      return std::make_unique<PerthInference>(
+          wave_table, InterpolationType::kFourierAdmittance);
+    default:
+      throw std::invalid_argument("Unknown inference type");
+  }
+}
+
 // ============================================================================
 // Implementation
 // ============================================================================
 
-template <typename WaveTableInterfaceDerived>
-auto SplineInference::apply_impl(
-    WaveTableInterface<WaveTableInterfaceDerived>& wave_table,
-    const double /* lat */) -> void {
+auto SplineInference::apply_impl(WaveTableInterface& wave_table,
+                                 const double /* lat */) -> void {
   // Arrays who contains the spline coefficients needed to compute MU2, NU2,
   // L2, T2 and Lambda2 by admittance.
   constexpr auto mu2 =
@@ -258,17 +273,17 @@ auto SplineInference::inferred_constituents() const
 
 // ============================================================================
 
-template <typename WaveTableInterfaceDerived, size_t N>
+template <size_t N>
 auto populate_and_sort_inferred(
     Map<ConstituentId, std::pair<double, double>, N>& mutable_inferred,
     std::vector<ConstituentId>& keys,
     const Map<ConstituentId, double, N>& inferred,
-    const WaveTableInterface<WaveTableInterfaceDerived>& wave_table) -> void {
+    const WaveTableInterface& wave_table) -> void {
   for (const auto& item : inferred) {
     const auto ident = item.first;
     const auto ampl = item.second;
     const auto doodson_number =
-        wave_table[ident].doodson_numbers.head(6).template cast<double>();
+        wave_table[ident]->doodson_numbers().head(6).template cast<double>();
     mutable_inferred[ident] = {perth::tidal_frequency(doodson_number), ampl};
     keys.push_back(ident);
   }
@@ -278,8 +293,8 @@ auto populate_and_sort_inferred(
       keys.begin(), keys.end(),
       [&mutable_inferred](const ConstituentId& a, const ConstituentId& b) {
         // Access the values through the map for comparison
-        const auto& inferred_value_a = mutable_inferred.at(a);
-        const auto& inferred_value_b = mutable_inferred.at(b);
+        const auto& inferred_value_a = mutable_inferred[a];
+        const auto& inferred_value_b = mutable_inferred[b];
         return inferred_value_a.first < inferred_value_b.first;
       });
 }
@@ -368,10 +383,8 @@ auto PerthInference::evaluate_node_tide(WaveInterface& node, const double lat)
 
 // ============================================================================
 
-template <typename WaveTableInterfaceDerived>
-PerthInference::PerthInference(
-    const WaveTableInterface<WaveTableInterfaceDerived>& wave_table,
-    const InterpolationType interpolation_type) {
+PerthInference::PerthInference(const WaveTableInterface& wave_table,
+                               const InterpolationType interpolation_type) {
   /// Inferred diurnal constituents with their frequencies.
   static constexpr const Map<ConstituentId, double, 19>
       kInferredDiurnalConstituents_{{{{ConstituentId::k2Q1, 0.006638},
@@ -489,10 +502,8 @@ PerthInference::PerthInference(
   }
 }
 
-template <typename WaveTableInterfaceDerived>
-auto PerthInference::apply_impl(
-    WaveTableInterface<WaveTableInterfaceDerived>& wave_table, const double lat)
-    -> void {
+auto PerthInference::apply_impl(WaveTableInterface& wave_table,
+                                const double lat) -> void {
   auto y1 = wave_table[ConstituentId::kQ1]->tide() / amp1_;
   auto y2 = wave_table[ConstituentId::kO1]->tide() / amp2_;
   auto y3 = wave_table[ConstituentId::kK1]->tide() / amp3_;
@@ -524,7 +535,7 @@ auto PerthInference::apply_impl(
     auto y = interpolation_1_(x1_, y1, x2_, y2, x3_, y3, x);
     std::tie(fk, fh, fl) = perth::love_pmm95b(x);
     auto gam = 1 + fk - fh;
-    updated_item.tide = y * gam * inferred_item.second;
+    updated_item.set_tide(y * gam * inferred_item.second);
   }
 
   for (const auto& constituent : semidiurnal_keys_) {
@@ -537,7 +548,7 @@ auto PerthInference::apply_impl(
     }
     const auto& inferred_item = inferred_semidiurnal_[constituent];
     auto y = interpolation_2_(x4_, y4, x5_, y5, x6_, y6, inferred_item.first);
-    updated_item.tide = y * inferred_item.second;
+    updated_item.set_tide(y * inferred_item.second);
   }
 
   for (const auto& constituent : long_period_keys_) {
@@ -551,8 +562,21 @@ auto PerthInference::apply_impl(
     const auto& inferred_item = inferred_long_period_[constituent];
     auto y =
         linear_interpolation(x7_, y7, x8_, y8, x9_, y9, inferred_item.first);
-    updated_item.tide = y * inferred_item.second;
+    updated_item.set_tide(y * inferred_item.second);
   }
+}
+
+// ============================================================================
+
+auto PerthInference::inferred_constituents() const
+    -> std::vector<ConstituentId> {
+  std::vector<ConstituentId> result;
+  result.insert(result.end(), diurnal_keys_.begin(), diurnal_keys_.end());
+  result.insert(result.end(), semidiurnal_keys_.begin(),
+                semidiurnal_keys_.end());
+  result.insert(result.end(), long_period_keys_.begin(),
+                long_period_keys_.end());
+  return result;
 }
 
 }  // namespace fes

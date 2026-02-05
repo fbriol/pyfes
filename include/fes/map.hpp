@@ -42,12 +42,30 @@ class Map {
     return nullptr;
   }
 
+  /// @brief Gets the mutable value associated with a key.
+  /// @param[in] key The key.
+  /// @return Pointer to the associated value, or nullptr if the key is not
+  /// present.
+  constexpr auto get(KeyT key) noexcept -> ValueT* {
+    for (auto& pair : data_) {
+      if (pair.first == key) {
+        return &pair.second;
+      }
+    }
+    return nullptr;
+  }
+
   /// @brief Gets the value associated with a key.
   /// @param[in] key The key.
   /// @return Reference to the associated value.
   constexpr auto operator[](KeyT key) const noexcept -> const ValueT& {
     return *get(key);
   }
+
+  /// @brief Gets the mutable value associated with a key.
+  /// @param[in] key The key.
+  /// @return Reference to the associated value.
+  constexpr auto operator[](KeyT key) noexcept -> ValueT& { return *get(key); }
 
   /// @brief Checks if a key is present in the map.
   /// @param[in] key The key.

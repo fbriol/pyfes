@@ -10,10 +10,10 @@
 #include <cstdint>
 
 #include "fes/angle/astronomic.hpp"
-#include "fes/geometry/point.hpp"
 #include "fes/constituent.hpp"
-#include "fes/types.hpp"
+#include "fes/geometry/point.hpp"
 #include "fes/interface/wave_table.hpp"
+#include "fes/types.hpp"
 
 namespace fes {
 
@@ -132,7 +132,7 @@ class TidalModelInterface
   /// Build a tidal model with a given tide type.
   ///
   /// @param[in] tide_type The tide type handled by the model.
-  explicit TidalModelInterface(TideType tide_type): tide_type_(tide_type) {}
+  explicit TidalModelInterface(TideType tide_type) : tide_type_(tide_type) {}
 
   /// Destructor
   virtual ~TidalModelInterface() = default;
@@ -161,7 +161,7 @@ class TidalModelInterface
     auto wt = wave_table_factory(engine_type);
     auto& wt_instance = *wt;
     for (auto& item : data_) {
-      auto wave = wt_instance[item.first]->set_is_modeled(true);
+      wt_instance[item.first]->set_is_modeled(true);
     }
     return wt;
   }
@@ -229,7 +229,7 @@ class TidalModelInterface
   /// @param[inout] acc The accelerator to use.
   /// @return A list of interpolated tidal constituents.
   virtual auto interpolate(const geometry::Point& point, Quality& quality,
-                           Accelerator* acc) const
+                           Accelerator& acc) const
       -> const ConstituentValues& = 0;
 
   /// Interpolate the tidal constituent at a given point.
@@ -242,7 +242,7 @@ class TidalModelInterface
   /// if the model is undefined.
   inline auto interpolate(const geometry::Point& point,
                           WaveTableInterface& wave_table,
-                          Accelerator* acc) const -> Quality {
+                          Accelerator& acc) const -> Quality {
     Quality quality;
     for (auto&& item : this->interpolate(point, quality, acc)) {
       wave_table.set_tide(std::get<0>(item), std::get<1>(item));

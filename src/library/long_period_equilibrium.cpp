@@ -4,6 +4,7 @@
 // BSD-style license that can be found in the LICENSE file.
 #include "fes/long_period_equilibrium.hpp"
 
+#include "fes/constituent.hpp"
 #include "fes/interface/wave_table.hpp"
 
 namespace fes {
@@ -148,61 +149,66 @@ LongPeriodEquilibrium::LongPeriodEquilibrium()
 auto LongPeriodEquilibrium::disable_dynamic_wave(
     const WaveTableInterface& table) -> void {
   // Indexes are the same as those defined starting from l.389
-  if (table[kMm]->is_modeled()) {
+  auto is_modeled = [](const WaveTableInterface& table,
+                       const ConstituentId id) {
+    return table.contains(id) && table[id]->is_modeled();
+  };
+
+  if (is_modeled(table, kMm)) {
     order2_.row(29).fill(0);
     order2_.row(30).fill(0);
     order2_.row(31).fill(0);
     order2_.row(32).fill(0);
   }
-  if (table[kMf]->is_modeled()) {
+  if (is_modeled(table, kMf)) {
     order2_.row(56).fill(0);
     order2_.row(57).fill(0);
     order2_.row(58).fill(0);
     order2_.row(59).fill(0);
   }
-  if (table[kMtm]->is_modeled()) {
+  if (is_modeled(table, kMtm)) {
     order2_.row(85).fill(0);
     order2_.row(86).fill(0);
     order2_.row(87).fill(0);
   }
-  if (table[kMSqm]->is_modeled()) {
+  if (is_modeled(table, kMSqm)) {
     order2_.row(98).fill(0);
     order2_.row(99).fill(0);
     order2_.row(100).fill(0);
   }
-  if (table[kSsa]->is_modeled()) {
+  if (is_modeled(table, kSsa)) {
     order2_.row(9).fill(0);
     order2_.row(11).fill(0);
     order2_.row(12).fill(0);
   }
-  if (table[kSa1]->is_modeled()) {
+  if (is_modeled(table, kSa1)) {
     order2_.row(4).fill(0);
   }
-  if (table[kSta]->is_modeled()) {
+  if (is_modeled(table, kSta)) {
     order2_.row(13).fill(0);
   }
-  if (table[kMm1]->is_modeled()) {
+  if (is_modeled(table, kMm1)) {
     order2_.row(33).fill(0);
     order2_.row(34).fill(0);
     order2_.row(35).fill(0);
   }
-  if (table[kMf1]->is_modeled()) {
+  if (is_modeled(table, kMf1)) {
     order2_.row(53).fill(0);
     order2_.row(54).fill(0);
     order2_.row(55).fill(0);
   }
-  if (table[kA5]->is_modeled()) {
+  if (is_modeled(table, kA5)) {
     order2_.row(44).fill(0);
     order2_.row(45).fill(0);
     order2_.row(46).fill(0);
   }
-  if (table[kMm2]->is_modeled()) {
+  if (is_modeled(table, kMm2)) {
     order3_.row(3).fill(0);
     order3_.row(4).fill(0);
     order3_.row(5).fill(0);
     order3_.row(6).fill(0);
   }
-  if (table[kMf2]->is_modeled()) {
+  if (is_modeled(table, kMf2)) {
     order3_.row(8).fill(0);
     order3_.row(9).fill(0);
   }

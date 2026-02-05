@@ -68,7 +68,7 @@ class Cartesian : public TidalModelInterface<T> {
   /// @param[inout] acc The accelerator to use.
   /// @return The interpolated tidal model.
   auto interpolate(const geometry::Point& point, Quality& quality,
-                   Accelerator* acc) const -> const ConstituentValues& override;
+                   Accelerator& acc) const -> const ConstituentValues& override;
 
   /// Get the longitude axis.
   ///
@@ -95,10 +95,10 @@ class Cartesian : public TidalModelInterface<T> {
 
 template <typename T>
 auto Cartesian<T>::interpolate(const geometry::Point& point, Quality& quality,
-                               Accelerator* acc) const
+                               Accelerator& acc) const
     -> const ConstituentValues& {
   // Remove all previous values interpolated.
-  acc->clear();
+  acc.clear();
   // Find the nearest point in the grid
   auto lon_index = lon_.find_indices(point.lon());
   auto lat_index = lat_.find_indices(point.lat());
@@ -109,10 +109,10 @@ auto Cartesian<T>::interpolate(const geometry::Point& point, Quality& quality,
                 std::numeric_limits<double>::quiet_NaN());
 
     for (const auto& item : this->data_) {
-      acc->emplace_back(item.first, undefined_value);
+      acc.emplace_back(item.first, undefined_value);
     }
     quality = kUndefined;
-    return acc->values();
+    return acc.values();
   };
 
   if (!lon_index || !lat_index) {
@@ -148,12 +148,12 @@ auto Cartesian<T>::interpolate(const geometry::Point& point, Quality& quality,
     if (std::isnan(value.real()) || std::isnan(value.imag())) {
       return reset_values_to_undefined();
     }
-    acc->emplace_back(item.first, value);
+    acc.emplace_back(item.first, value);
   }
   // n represents the number of valid grid corners used in the bilinear
   // interpolation (0, 1, 2, or 4).
   quality = static_cast<Quality>(n);
-  return acc->values();
+  return acc.values();
 }
 
 }  // namespace tidal_model

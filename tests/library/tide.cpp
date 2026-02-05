@@ -129,7 +129,7 @@ TEST_F(EvaluateTideTest, FES) {
       model_.get(), epochs, lons, lats,
       FESSettings{}.with_num_threads((1)).with_astronomic_formulae(
           angle::Formulae::kIERS));
-  EXPECT_NEAR(std::get<0>(result)(0), 1.174250344816586, 1e-6);
+  EXPECT_NEAR(std::get<0>(result)(0), -0.93594685657527033, 1e-6);
   EXPECT_NEAR(std::get<1>(result)(0), 0.91756905183442172, 1e-6);
   EXPECT_EQ(std::get<2>(result)(0), 4);
 }

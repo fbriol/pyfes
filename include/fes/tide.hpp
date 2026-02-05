@@ -64,7 +64,7 @@ inline auto evaluate_tide(const TidalModelInterface<T>& tidal_model,
                           WaveTableInterface& wave_table,
                           InferenceInterface& inference,
                           LongPeriodEquilibrium& long_period, Accelerator& acc)
-    -> std::tuple<double, double, double, Quality> {
+    -> std::tuple<double, double, Quality> {
   const auto compute_long_period_equilibrium =
       tidal_model.tide_type() == fes::kTide;
 
@@ -87,7 +87,7 @@ inline auto evaluate_tide(const TidalModelInterface<T>& tidal_model,
     return {std::numeric_limits<double>::quiet_NaN(), long_period_equilibrium,
             quality};
   }
-  auto tides = evaluate_tide_from_waves(
+  auto tides = evaluate_tide_from_waves<T>(
       epoch, latitude, compute_long_period_equilibrium, settings, wave_table,
       inference, long_period, acc);
   return {std::get<0>(tides), std::get<1>(tides), quality};

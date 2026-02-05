@@ -156,7 +156,7 @@ class LGP : public TidalModelInterface<T> {
   /// @param[inout] acc An accelerator to speed up the calculation.
   /// @return A list of interpolated wave models.
   auto interpolate(const geometry::Point& point, Quality& quality,
-                   Accelerator* acc) const -> const ConstituentValues& override;
+                   Accelerator& acc) const -> const ConstituentValues& override;
 
   /// Get the mesh index.
   ///
@@ -228,7 +228,7 @@ class LGP : public TidalModelInterface<T> {
       const Eigen::Matrix<double, 1, 3>& query_point,
       const Eigen::Matrix<double, -1, 3>& known_points,
       const std::vector<int64_t>& selected_indices, int64_t valid_count,
-      LGPAccelerator* acc) const -> void;
+      LGPAccelerator& acc) const -> void;
 
   /// @brief Handle vertex interpolation when point is exactly on a vertex.
   ///
@@ -238,7 +238,7 @@ class LGP : public TidalModelInterface<T> {
   /// @return True if interpolation was successful, false otherwise.
   auto handle_vertex_interpolation(int vertex_id,
                                    const typename CodesType::ConstRowXpr& codes,
-                                   LGPAccelerator* acc) const -> bool;
+                                   LGPAccelerator& acc) const -> bool;
 
   /// @brief Perform LGP interpolation within a triangle.
   ///
@@ -467,7 +467,7 @@ auto LGP<T, N>::inverse_distance_weighting(
     const Eigen::Matrix<double, 1, 3>& query_point,
     const Eigen::Matrix<double, -1, 3>& known_points,
     const std::vector<int64_t>& selected_indices, int64_t valid_count,
-    LGPAccelerator* acc) const -> void {
+    LGPAccelerator& acc) const -> void {
   for (const auto& item : this->data_) {
     const auto& wave = item.second;
     Complex sum_of_weights(0, 0);
@@ -530,14 +530,14 @@ auto LGP<T, N>::extrapolate(
 template <typename T, int N>
 auto LGP<T, N>::handle_vertex_interpolation(
     int vertex_id, const typename CodesType::ConstRowXpr& codes,
-    LGPAccelerator* acc) const -> bool {
+    LGPAccelerator& acc) const -> bool {
   const auto ix = codes(vertex_id * N);
   if (selected_indices_.empty()) {
     // First case: no bounding box is provided, we directly use the LGP codes
     // for the vertex.
     for (const auto& item : this->data_) {
       const auto value = item.second(ix);
-      acc->emplace_back(item.first, static_cast<std::complex<T>>(value));
+      acc.emplace_back(item.first, static_cast<std::complex<T>>(value));
     }
   } else {
     // Second case: a bounding box is provided, we need to check if the LGP
@@ -549,7 +549,7 @@ auto LGP<T, N>::handle_vertex_interpolation(
 
     for (const auto& item : this->data_) {
       const auto value = item.second(it->second);
-      acc->emplace_back(item.first, static_cast<std::complex<T>>(value));
+      acc.emplace_back(item.first, static_cast<std::complex<T>>(value));
     }
   }
   return true;
@@ -600,9 +600,9 @@ auto LGP<T, N>::perform_lgp_interpolation(
 // ===========================================================================
 template <typename T, int N>
 auto LGP<T, N>::interpolate(const geometry::Point& point, Quality& quality,
-                            Accelerator* acc) const
+                            Accelerator& acc) const
     -> const ConstituentValues& {
-  auto* lgp_acc = reinterpret_cast<LGPAccelerator*>(acc);
+  auto& lgp_acc = reinterpret_cast<LGPAccelerator&>(acc);
   /// Lambda that sets the interpolation result to NaN if the point:
   /// - Is not located within or near the mesh, or
   /// - Lies outside the designated geographical area.
@@ -612,22 +612,21 @@ auto LGP<T, N>::interpolate(const geometry::Point& point, Quality& quality,
                 std::numeric_limits<double>::quiet_NaN());
 
     for (const auto& item : this->data_) {
-      lgp_acc->emplace_back(item.first, undefined_value);
+      lgp_acc.emplace_back(item.first, undefined_value);
     }
     quality = kUndefined;
-    return lgp_acc->values();
+    return lgp_acc.values();
   };
 
   // Reset the accelerator if the point is not in the cache, otherwise update
   // the point in use.
-  lgp_acc->in_cache(point) ? lgp_acc->reset(point)
-                           : lgp_acc->set(index_->search(point, max_distance_));
+  lgp_acc.in_cache(point) ? lgp_acc.reset(point)
+                           : lgp_acc.set(index_->search(point, max_distance_));
 
   // Remove all the data from the previous interpolation
-  lgp_acc->clear();
-
+  lgp_acc.clear();
   // Get the cached triangle
-  const auto& query_result = lgp_acc->get();
+  const auto& query_result = lgp_acc.get();
   if (!query_result.is_valid()) {
     // The point is outside the mesh or too far from it, we return NaN
     return reset_values_to_undefined();
@@ -640,7 +639,7 @@ auto LGP<T, N>::interpolate(const geometry::Point& point, Quality& quality,
       // If the extrapolation failed, we return NaN
       return reset_values_to_undefined();
     }
-    return lgp_acc->values();
+    return lgp_acc.values();
   }
 
   // Get the LGP codes for the triangle
@@ -658,7 +657,7 @@ auto LGP<T, N>::interpolate(const geometry::Point& point, Quality& quality,
     // Since the interpolation point coincides with a vertex, the interpolation
     // quality is optimal.
     quality = static_cast<Quality>(N * 3);
-    return lgp_acc->values();
+    return lgp_acc.values();
   }
 
   // Calculate ξ and η for the given point
@@ -676,7 +675,7 @@ auto LGP<T, N>::interpolate(const geometry::Point& point, Quality& quality,
     return reset_values_to_undefined();
   }
 
-  return lgp_acc->values();
+  return lgp_acc.values();
 }
 
 }  // namespace tidal_model

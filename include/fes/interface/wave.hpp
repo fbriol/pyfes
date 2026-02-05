@@ -8,7 +8,6 @@
 
 #include <memory>
 #include <string>
-#include <type_traits>
 
 #include "fes/angle/astronomic.hpp"
 #include "fes/constituent.hpp"
@@ -28,7 +27,9 @@ enum FrequencyUnit : uint8_t {
 /// @return The frequency scale factor.
 template <FrequencyUnit U>
 constexpr auto frequency_scale() noexcept -> double {
-  return U == FrequencyUnit::kRadianPerHour ? 1.0 : 180.0 / detail::math::pi<double>();
+  return U == FrequencyUnit::kRadianPerHour
+             ? 1.0
+             : 180.0 / detail::math::pi<double>();
 }
 
 /// @brief Possible type of tidal wave.
@@ -58,6 +59,10 @@ class NodalCorrectionsArgs {
     return angles_;
   }
 
+  /// Gets the mutable astronomic angles.
+  /// @return The mutable astronomic angles.
+  constexpr auto angles() noexcept -> angle::Astronomic& { return angles_; }
+
   /// @brief Whether to group modulations together when computing nodal
   /// corrections.
   /// @return Whether to group modulations together when computing nodal
@@ -65,10 +70,6 @@ class NodalCorrectionsArgs {
   constexpr auto group_modulations() const noexcept -> bool {
     return group_modulations_;
   }
-
-  /// Gets the mutable astronomic angles.
-  /// @return The mutable astronomic angles.
-  constexpr auto angles() noexcept -> angle::Astronomic& { return angles_; }
 };
 
 /// @brief Tidal wave interface.
@@ -135,6 +136,17 @@ class WaveInterface {
   /// @param tide The tide value.
   constexpr void set_tide(const Complex& tide) noexcept { tide_ = tide; }
 
+  /// @brief Computes the tide value, applying the nodal corrections.
+  /// @return The tide value after applying the nodal corrections.
+  /// @note Computes
+  /// @f$\Re(T e^{-i(v+u)})=\Re(T)\cos(v+u)+\Im(T)\sin(v+u)@f$
+  FES_MATH_CONSTEXPR auto corrected_tide() const noexcept -> double {
+    auto phi = vu();
+    auto raw_tide = tide();
+    return f() *
+           (raw_tide.real() * std::cos(phi) + raw_tide.imag() * std::sin(phi));
+  }
+
   /// @brief Gets the Greenwich argument, in radians.
   /// @return The Greenwich argument.
   constexpr auto v() const noexcept -> double { return v_; }
@@ -155,7 +167,8 @@ class WaveInterface {
     return std::fmod(v_ + u_, detail::math::two_pi<double>());
   }
 
-  /// @brief Sets the nodal corrections directly (for bulk updates with known values).
+  /// @brief Sets the nodal corrections directly (for bulk updates with known
+  /// values).
   /// @param f Nodal correction for amplitude.
   /// @param u Nodal correction for phase.
   /// @param v Greenwich argument.
@@ -166,8 +179,11 @@ class WaveInterface {
   }
 
   /// @brief Computes the nodal corrections for the wave.
-  /// @param[in] args Arguments required to compute the nodal corrections.
-  virtual auto compute_nodal_corrections(const NodalCorrectionsArgs& args)
+  /// @param[in] angles Astronomical angles used to compute nodal corrections.
+  /// @param[in] group_modulations If true, applies group modulations to nodal
+  /// corrections.
+  virtual auto compute_nodal_corrections(const angle::Astronomic& angles,
+                                         const bool group_modulations)
       -> void = 0;
 
   /// Gets the XDO numerical representation of the wave

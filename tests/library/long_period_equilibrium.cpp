@@ -2,12 +2,13 @@
 //
 // All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-#include "fes/darwin/long_period_equilibrium.hpp"
+#include "fes/long_period_equilibrium.hpp"
 
 #include <gtest/gtest.h>
 
+#include "fes/darwin/wave_table.hpp"
+
 namespace fes {
-namespace darwin {
 
 class AstronomicAngle : public angle::Astronomic {
  public:
@@ -32,7 +33,7 @@ class AstronomicAngle : public angle::Astronomic {
 };
 
 TEST(WaveOrder2, LpeMinus5WavesNonRegression) {
-  auto table = WaveTable();
+  auto table = darwin::WaveTable();
   auto lpe = LongPeriodEquilibrium(table);
   EXPECT_NEAR(lpe.lpe_minus_n_waves(AstronomicAngle(), 1), 0.41377275320048151,
               1e-6);
@@ -66,7 +67,7 @@ TEST(WaveOrder2, LpeMinus5WavesNonRegression) {
 }
 
 TEST(WaveOrder2, LpeMinus5WavesAvisoFES) {
-  auto table = WaveTable();
+  auto table = darwin::WaveTable();
   auto lpe = LongPeriodEquilibrium(table);
   EXPECT_NEAR(lpe.lpe_minus_n_waves(AstronomicAngle(true), 1),
               -3.2392765310488252, 1e-6);
@@ -92,5 +93,4 @@ TEST(WaveOrder2, LpeMinus5WavesAvisoFES) {
               -0.70850451575143991, 1e-6);
 }
 
-}  // namespace darwin
 }  // namespace fes

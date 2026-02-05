@@ -10,6 +10,7 @@
 #include <string>
 #include <vector>
 
+#include "fes/interface/wave.hpp"
 #include "fes/perth/constituent.hpp"
 #include "fes/perth/doodson.hpp"
 #include "fes/perth/nodal_corrections.hpp"
@@ -210,15 +211,17 @@ WaveTable::WaveTable(const std::vector<std::string>& names)
   populate_map(build_constituent_ids(names), wave_factory);
 }
 
-auto WaveTable::compute_nodal_corrections(const NodalCorrectionsArgs& args)
+auto WaveTable::compute_nodal_corrections(const angle::Astronomic& angles,
+                                          const bool group_modulations)
     -> void {
   auto constituent_ids = this->constituent_ids();
-  auto nodal_corrections = NodalCorrectionProcessor(args)(constituent_ids);
+  auto nodal_corrections = NodalCorrectionProcessor(
+      NodalCorrectionsArgs(angles, group_modulations))(constituent_ids);
 
   for (size_t ix = 0; ix < constituent_ids.size(); ++ix) {
     auto& component = (*this)[constituent_ids[ix]];
     auto tidal_argument = calculate_doodson_argument(
-        args.angles(), component->doodson_numbers().template cast<double>());
+        angles, component->doodson_numbers().template cast<double>());
     component->set_nodal_corrections(nodal_corrections[ix].f,
                                      nodal_corrections[ix].u, tidal_argument);
   }

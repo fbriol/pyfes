@@ -6,6 +6,7 @@
 
 #include <memory>
 
+#include "fes/angle/astronomic.hpp"
 #include "fes/constituent.hpp"
 #include "fes/darwin/constituent.hpp"
 #include "fes/darwin/wave.hpp"
@@ -245,10 +246,11 @@ WaveTable::WaveTable(const std::vector<std::string>& names)
   populate_map(build_constituent_ids(names), wave_factory);
 }
 
-auto WaveTable::compute_nodal_corrections(const NodalCorrectionsArgs& args)
+auto WaveTable::compute_nodal_corrections(const angle::Astronomic& angles,
+                                          const bool group_modulations)
     -> void {
   for (auto& item : *this) {
-    item.value()->compute_nodal_corrections(args);
+    item.value()->compute_nodal_corrections(angles, group_modulations);
   }
 }
 

@@ -39,9 +39,11 @@ class Wave : public WaveInterface {
   }
 
   /// @brief Computes the nodal corrections for the wave.
-  /// @param[in] args Nodal corrections arguments.
-  auto compute_nodal_corrections(const NodalCorrectionsArgs& args)
-      -> void final;
+  /// @param[in] angles Astronomical angles used to compute nodal corrections.
+  /// @param[in] group_modulations If true, applies group modulations to nodal
+  /// corrections.
+  auto compute_nodal_corrections(const angle::Astronomic& angles,
+                                 const bool group_modulations) -> void final;
 
   /// Gets the XDO numerical representation of the wave
   auto xdo_numerical() const -> std::string final {

@@ -2,10 +2,11 @@
 //
 // All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-#include "fes/darwin/long_period_equilibrium.hpp"
+#include "fes/long_period_equilibrium.hpp"
+
+#include "fes/interface/wave_table.hpp"
 
 namespace fes {
-namespace darwin {
 
 // Table below = Doodson coefficients
 // tau s   h   p   N'  p1  coef  => Doodson = several combination for
@@ -144,8 +145,8 @@ LongPeriodEquilibrium::LongPeriodEquilibrium()
                ).finished()) {}
 // clang-format on
 
-auto LongPeriodEquilibrium::disable_dynamic_wave(const WaveTable& table)
-    -> void {
+auto LongPeriodEquilibrium::disable_dynamic_wave(
+    const WaveTableInterface& table) -> void {
   // Indexes are the same as those defined starting from l.389
   if (table[kMm]->is_modeled()) {
     order2_.row(29).fill(0);
@@ -249,5 +250,4 @@ auto LongPeriodEquilibrium::lpe_minus_n_waves(const angle::Astronomic& angles,
   return (factor_20 * c20 * h20 + factor_30 * c30 * h30) * 100;
 }
 
-}  // namespace darwin
 }  // namespace fes

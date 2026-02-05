@@ -55,10 +55,12 @@ class Wave : public WaveInterface {
   }
 
   /// @brief Computes the nodal corrections for the wave.
-  /// @param[in] args Arguments required to compute the nodal corrections.
-  inline auto compute_nodal_corrections(const NodalCorrectionsArgs& args)
+  /// @param[in] angles Astronomical angles used to compute nodal corrections.
+  /// @param[in] group_modulations If true, applies group modulations to nodal
+  /// corrections.
+  inline auto compute_nodal_corrections(const angle::Astronomic& angles,
+                                        const bool group_modulations)
       -> void final {
-    const auto& angles = args.angles();
     nodal_a(angles);
     nodal_g(angles);
   }

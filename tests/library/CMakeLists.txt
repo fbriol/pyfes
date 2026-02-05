@@ -20,6 +20,8 @@ endmacro()
 
 
 add_testcase(inference fes)
+add_testcase(long_period_equilibrium fes)
+add_testcase(tide fes)
 
 add_subdirectory(angle)
 add_subdirectory(darwin)

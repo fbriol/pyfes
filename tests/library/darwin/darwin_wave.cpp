@@ -4,8 +4,8 @@
 // BSD-style license that can be found in the LICENSE file.
 #include <gtest/gtest.h>
 
-#include "fes/darwin/wave_table.hpp"
 #include "fes/darwin/wave.hpp"
+#include "fes/darwin/wave_table.hpp"
 #include "fes/interface/wave.hpp"
 
 namespace fes {
@@ -535,15 +535,13 @@ inline auto check_nodal_amplitude(const WaveTable& table) {
 
 TEST(Wave, NodalPhase) {
   auto table = WaveTable();
-  table.compute_nodal_corrections(
-      NodalCorrectionsArgs(AstronomicAngleForNodalG()));
+  table.compute_nodal_corrections(AstronomicAngleForNodalG(), false);
   check_nodal_phase(table);
 }
 
 TEST(Wave, NodalAmplitude) {
   auto table = WaveTable();
-  table.compute_nodal_corrections(
-      NodalCorrectionsArgs(AstronomicAngleForNodalA()));
+  table.compute_nodal_corrections(AstronomicAngleForNodalA(), false);
   check_nodal_amplitude(table);
 }
 

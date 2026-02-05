@@ -5,18 +5,21 @@
 
 #include "fes/perth/wave.hpp"
 
+#include "fes/angle/astronomic.hpp"
+#include "fes/interface/wave.hpp"
 #include "fes/perth/doodson.hpp"
 #include "fes/perth/nodal_corrections.hpp"
 
 namespace fes {
 namespace perth {
 
-auto Wave::compute_nodal_corrections(const NodalCorrectionsArgs& args) -> void {
-  auto nc = NodalCorrectionProcessor(args)(ident());
+auto Wave::compute_nodal_corrections(const angle::Astronomic& angles,
+                                     const bool group_modulations) -> void {
+  auto nc = NodalCorrectionProcessor(
+      NodalCorrectionsArgs{angles, group_modulations})(ident());
   f_ = nc.f;
   u_ = nc.u;
-  v_ = calculate_doodson_argument(args.angles(),
-                                  doodson_numbers_.cast<double>());
+  v_ = calculate_doodson_argument(angles, doodson_numbers_.cast<double>());
 }
 
 namespace wave {

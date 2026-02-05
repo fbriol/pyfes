@@ -26,9 +26,11 @@ class WaveTable : public WaveTableInterface {
   explicit WaveTable(const std::vector<std::string>& names);
 
   /// @brief Computes the nodal corrections for all constituents in the table.
-  ///
-  /// @param[in] args Arguments required to compute the nodal corrections.
-  auto compute_nodal_corrections(const NodalCorrectionsArgs& args) -> void final;
+  /// @param[in] angles Astronomical angles used to compute nodal corrections.
+  /// @param[in] group_modulations If true, applies group modulations to nodal
+  /// corrections.
+  auto compute_nodal_corrections(const angle::Astronomic& angles,
+                                 const bool group_modulations) -> void final;
 
   /// @brief Clones the wave table.
   /// @return A unique pointer to the cloned wave table.

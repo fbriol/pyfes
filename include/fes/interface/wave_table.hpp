@@ -20,6 +20,12 @@
 
 namespace fes {
 
+/// @brief Enumeration of available harmonic constituent notation systems
+enum class EngineType : uint8_t {
+  kDarwin = 0,  ///< Darwin's notation system, used by FES models
+  kDoodson = 1  ///< Doodson's notation system, used by the GOT models
+};
+
 /// @brief Map of constituents to wave interfaces.
 using ConstituentMap =
     EnumMap<ConstituentId, std::unique_ptr<WaveInterface>, kKnownConstituents>;
@@ -75,8 +81,11 @@ class WaveTableInterface {
 
   /// @brief Computes the nodal corrections for all constituents in the table.
   ///
-  /// @param[in] args Arguments required to compute the nodal corrections.
-  virtual auto compute_nodal_corrections(const NodalCorrectionsArgs& args)
+  /// @param[in] angles Astronomical angles used to compute nodal corrections.
+  /// @param[in] group_modulations If true, applies group modulations to nodal
+  /// corrections.
+  virtual auto compute_nodal_corrections(const angle::Astronomic& angles,
+                                         const bool group_modulations)
       -> void = 0;
 
   /// @brief Get the wave corresponding at the given index.
@@ -252,5 +261,11 @@ class WaveTableInterface {
                              " not found in the wave table.");
   }
 };
+
+/// @brief Factory function to create a wave table based on the specified engine
+/// type.
+/// @return A unique pointer to the created wave table.
+auto wave_table_factory(const EngineType engine_type)
+    -> std::unique_ptr<WaveTableInterface>;
 
 }  // namespace fes

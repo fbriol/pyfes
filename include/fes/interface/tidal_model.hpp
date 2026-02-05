@@ -150,6 +150,22 @@ class TidalModelInterface
                            const double time_tolerance) const
       -> Accelerator* = 0;
 
+  /// @brief Returns a wave table initialized with the tidal constituents
+  /// modeled by this instance.
+  ///
+  /// @param[in] engine_type The engine type for the tidal constituent notation
+  /// system.
+  /// @return A unique pointer to an initialized wave table for tide prediction.
+  auto wave_table(EngineType engine_type) const
+      -> std::unique_ptr<WaveTableInterface> {
+    auto wt = wave_table_factory(engine_type);
+    auto& wt_instance = *wt;
+    for (auto& item : data_) {
+      auto wave = wt_instance[item.first]->set_is_modeled(true);
+    }
+    return wt;
+  }
+
   /// Add a tidal constituent to the model.
   ///
   /// @param[in] ident The tidal constituent identifier.

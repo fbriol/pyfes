@@ -51,7 +51,7 @@ auto WaveTableInterface::tide_from_tide_series(
   for (auto ix = 0; ix < epoch.rows(); ++ix) {
     double tide = 0;
     angles.update(epoch(ix));
-    wt->compute_nodal_corrections(args);
+    wt->compute_nodal_corrections(angles, args.group_modulations());
 
     for (size_t jx = 0; jx < wt->size(); ++jx) {
       const auto& item = (*wt)[jx];
@@ -82,7 +82,7 @@ auto WaveTableInterface::tide_from_mapping(
     // instance.
     auto wt = clone();
     args.angles().update(epoch);
-    wt->compute_nodal_corrections(args);
+    wt->compute_nodal_corrections(args.angles(), args.group_modulations());
     for (auto ix = start; ix < end; ++ix) {
       for (size_t jx = 0; jx < wt->size(); ++jx) {
         const auto& item = (*wt)[jx];
@@ -115,7 +115,7 @@ auto WaveTableInterface::compute_nodal_modulations(
 
   for (auto ix = 0; ix < epoch.size(); ++ix) {
     angles.update(epoch(ix));
-    wt->compute_nodal_corrections(args);
+    wt->compute_nodal_corrections(angles, args.group_modulations());
     for (size_t jx = 0; jx < wt->size(); ++jx) {
       const auto& wave = (*wt)[jx];
       f(jx, ix) = wave->f();

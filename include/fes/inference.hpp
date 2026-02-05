@@ -130,32 +130,21 @@ class PerthInference : public Inference<PerthInference> {
       -> const Complex&;
 };
 
+/// @brief Factory function to create an inference object based on the specified
+/// inference type.
+/// @param wave_table The wave table containing the waves used for inference.
+/// @param inference_type The type of inference interpolation to use.
+/// @return A unique pointer to the created inference object.
 auto inference_factory(WaveTableInterface& wave_table,
                        const InferenceType inference_type)
-    -> std::unique_ptr<InferenceInterface> {
-  switch (inference_type) {
-    case InferenceType::kSpline:
-      return std::make_unique<SplineInference>();
-    case InferenceType::kZero:
-      return std::make_unique<PerthInference>(
-          wave_table, InterpolationType::kZeroAdmittance);
-    case InferenceType::kLinear:
-      return std::make_unique<PerthInference>(
-          wave_table, InterpolationType::kLinearAdmittance);
-    case InferenceType::kFourier:
-      return std::make_unique<PerthInference>(
-          wave_table, InterpolationType::kFourierAdmittance);
-    default:
-      throw std::invalid_argument("Unknown inference type");
-  }
-}
+    -> std::unique_ptr<InferenceInterface>;
 
 // ============================================================================
 // Implementation
 // ============================================================================
 
-auto SplineInference::apply_impl(WaveTableInterface& wave_table,
-                                 const double /* lat */) -> void {
+inline auto SplineInference::apply_impl(WaveTableInterface& wave_table,
+                                        const double /* lat */) -> void {
   // Arrays who contains the spline coefficients needed to compute MU2, NU2,
   // L2, T2 and Lambda2 by admittance.
   constexpr auto mu2 =
@@ -269,7 +258,7 @@ auto SplineInference::apply_impl(WaveTableInterface& wave_table,
 
 // ============================================================================
 
-auto SplineInference::inferred_constituents() const
+inline auto SplineInference::inferred_constituents() const
     -> std::vector<ConstituentId> {
   return {k2Q1,  kSigma1, kRho1,    kM11, kM12, kChi1, kPi1,
           kPhi1, kTheta1, kJ1,      kOO1, k2N2, kEps2, kEta2,
@@ -287,7 +276,9 @@ auto populate_and_sort_inferred(
   for (const auto& item : inferred) {
     const auto ident = item.first;
     const auto ampl = item.second;
-    const auto doodson_number =
+    // Don't use auto here to avoid dangling reference to temporary Vector6d
+    // created by head(6).template cast<double>()
+    const Vector6d doodson_number =
         wave_table[ident]->doodson_numbers().head(6).template cast<double>();
     mutable_inferred.insert(ident,
                             {perth::tidal_frequency(doodson_number), ampl});
@@ -390,7 +381,7 @@ auto fourier_interpolation(double /*x1*/, const Complex& z1, double /*x2*/,
 
 // ============================================================================
 
-auto PerthInference::evaluate_node_tide(WaveInterface& node, const double lat)
+inline auto PerthInference::evaluate_node_tide(WaveInterface& node, const double lat)
     -> const Complex& {
   if (!node.is_modeled()) {
     constexpr auto gamma2 = 0.682;
@@ -405,8 +396,8 @@ auto PerthInference::evaluate_node_tide(WaveInterface& node, const double lat)
 
 // ============================================================================
 
-PerthInference::PerthInference(const WaveTableInterface& wave_table,
-                               const InterpolationType interpolation_type) {
+inline PerthInference::PerthInference(const WaveTableInterface& wave_table,
+                                      const InterpolationType interpolation_type) {
   /// Inferred diurnal constituents with their frequencies.
   static constexpr const Map<ConstituentId, double, 19>
       kInferredDiurnalConstituents_{{{{ConstituentId::k2Q1, 0.006638},
@@ -536,8 +527,8 @@ PerthInference::PerthInference(const WaveTableInterface& wave_table,
   }
 }
 
-auto PerthInference::apply_impl(WaveTableInterface& wave_table,
-                                const double lat) -> void {
+inline auto PerthInference::apply_impl(WaveTableInterface& wave_table,
+                                       const double lat) -> void {
   auto y1 = wave_table[ConstituentId::kQ1]->tide() / amp1_;
   auto y2 = wave_table[ConstituentId::kO1]->tide() / amp2_;
   auto y3 = wave_table[ConstituentId::kK1]->tide() / amp3_;
@@ -601,7 +592,7 @@ auto PerthInference::apply_impl(WaveTableInterface& wave_table,
 
 // ============================================================================
 
-auto PerthInference::inferred_constituents() const
+inline auto PerthInference::inferred_constituents() const
     -> std::vector<ConstituentId> {
   std::vector<ConstituentId> result;
   result.insert(result.end(), diurnal_keys_.begin(), diurnal_keys_.end());

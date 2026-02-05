@@ -1,0 +1,160 @@
+// Copyright (c) 2026 CNES
+//
+// All rights reserved. Use of this source code is governed by a
+// BSD-style license that can be found in the LICENSE file.
+/// @file include/fes/tidal_model/cartesian.hpp
+/// @brief Cartesian tidal model
+#pragma once
+#include <limits>
+#include <utility>
+
+#include "fes/axis.hpp"
+#include "fes/constituent.hpp"
+#include "fes/detail/grid.hpp"
+#include "fes/interface/tidal_model.hpp"
+
+namespace fes {
+namespace tidal_model {
+
+/// @brief %Cartesian tidal model.
+///
+/// @tparam T The type of the tidal model.
+template <typename T>
+class Cartesian : public TidalModelInterface<T> {
+ public:
+  /// Build a Cartesian tidal model from its grid properties.
+  ///
+  /// @param[in] lon The longitude axis.
+  /// @param[in] lat The latitude axis.
+  /// @param[in] tide_type The tide type handled by the model.
+  /// @param[in] row_major Whether the data is stored in longitude-major order.
+  Cartesian(const Axis& lon, const Axis& lat, const TideType tide_type,
+            const bool row_major = true)
+      : TidalModelInterface<T>(tide_type),
+        row_major_(row_major),
+        lon_(lon),
+        lat_(lat) {}
+
+  /// Add a tidal constituent to the model.
+  ///
+  /// @param[in] ident The tidal constituent identifier.
+  /// @param[in] wave The tidal constituent modelled.
+  inline auto add_constituent(const ConstituentId ident,
+                              Vector<std::complex<T>> wave) -> void override {
+    if (wave.size() != lon_.size() * lat_.size()) {
+      throw std::invalid_argument("wave size does not match expected size");
+    }
+    this->data_.emplace(ident, std::move(wave));
+  }
+
+  /// @brief Returns a null pointer as this tidal model does not use an
+  /// accelerator to speed up the calculation.
+  ///
+  /// @param[in] formulae The formulae used to calculate the astronomic angle.
+  /// @param[in] time_tolerance The time in seconds during which astronomical
+  /// angles are considered constant. The default value is 0 seconds, indicating
+  /// that astronomical angles do not remain constant with time.
+  /// @return A null pointer
+  constexpr auto accelerator(const angle::Formulae& formulae,
+                             const double time_tolerance) const
+      -> Accelerator* override {
+    return new Accelerator(formulae, time_tolerance, this->data_.size());
+  }
+
+  /// Interpolate the tidal model at a given point.
+  ///
+  /// @param[in] point The point to interpolate at.
+  /// @param[inout] quality A flag indicating if the point was extrapolated.
+  /// @param[inout] acc The accelerator to use.
+  /// @return The interpolated tidal model.
+  auto interpolate(const geometry::Point& point, Quality& quality,
+                   Accelerator* acc) const -> const ConstituentValues& override;
+
+  /// Get the longitude axis.
+  ///
+  /// @return The longitude axis.
+  constexpr auto lon() const noexcept -> const Axis& { return lon_; }
+
+  /// Get the latitude axis.
+  ///
+  /// @return The latitude axis.
+  constexpr auto lat() const noexcept -> const Axis& { return lat_; }
+
+ private:
+  /// Whether the data is stored in longitude-major order.
+  bool row_major_;
+  /// Longitude axis.
+  Axis lon_;
+  /// Latitude axis.
+  Axis lat_;
+};
+
+// ===========================================================================
+// Implementation
+// ===========================================================================
+
+template <typename T>
+auto Cartesian<T>::interpolate(const geometry::Point& point, Quality& quality,
+                               Accelerator* acc) const
+    -> const ConstituentValues& {
+  // Remove all previous values interpolated.
+  acc->clear();
+  // Find the nearest point in the grid
+  auto lon_index = lon_.find_indices(point.lon());
+  auto lat_index = lat_.find_indices(point.lat());
+
+  auto reset_values_to_undefined = [&]() -> const ConstituentValues& {
+    constexpr auto undefined_value =
+        Complex(std::numeric_limits<double>::quiet_NaN(),
+                std::numeric_limits<double>::quiet_NaN());
+
+    for (const auto& item : this->data_) {
+      acc->emplace_back(item.first, undefined_value);
+    }
+    quality = kUndefined;
+    return acc->values();
+  };
+
+  if (!lon_index || !lat_index) {
+    return reset_values_to_undefined();
+  }
+
+  int64_t i1;
+  int64_t i2;
+  int64_t j1;
+  int64_t j2;
+  std::tie(i1, i2) = *lon_index;
+  std::tie(j1, j2) = *lat_index;
+  const auto x1 = lon_(i1);
+  const auto x2 = lon_(i2);
+  const auto y1 = lat_(j1);
+  const auto y2 = lat_(j2);
+  auto n = int64_t{0};
+
+  auto wxy = detail::math::bilinear_weights(
+      detail::math::normalize_angle(point.lon(), x1), point.lat(), x1, y1,
+      detail::math::normalize_angle(x2, x1), y2);
+
+  auto grid = detail::Grid<std::complex<T>>(
+      nullptr, static_cast<size_t>(lon_.size()),
+      static_cast<size_t>(lat_.size()), row_major_);
+  for (const auto& item : this->data_) {
+    grid.data(item.second.data());
+    auto value = detail::math::bilinear_interpolation<Complex>(
+        std::get<0>(wxy), std::get<1>(wxy), std::get<2>(wxy), std::get<3>(wxy),
+        grid(i1, j1), grid(i1, j2), grid(i2, j1), grid(i2, j2), n);
+    // The computed value lies within the grid boundaries, but it is NaN (not a
+    // number).
+    if (std::isnan(value.real()) || std::isnan(value.imag())) {
+      return reset_values_to_undefined();
+    }
+    acc->emplace_back(item.first, value);
+  }
+  // n represents the number of valid grid corners used in the bilinear
+  // interpolation (0, 1, 2, or 4).
+  quality = static_cast<Quality>(n);
+  return acc->values();
+}
+
+}  // namespace tidal_model
+}  // namespace fes

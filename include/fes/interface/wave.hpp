@@ -131,7 +131,7 @@ class WaveInterface {
 
   /// Gets the period of the wave (hours)
   constexpr auto period() const noexcept -> double {
-    return detail::math::two_pi<double>() / frequency<kRadianPerHour>();
+    return detail::math::two_pi<double>() / frequency();
   }
 
   /// @brief Gets the tide value.
@@ -168,9 +168,10 @@ class WaveInterface {
   /// @brief Gets the sum of the Greenwich argument and the nodal phase
   /// correction, in radians.
   /// @return The sum of the Greenwich argument and the nodal phase
-  /// correction, normalized to the interval [-π, +π).
-  inline auto vu() const noexcept -> double {
-    return std::fmod(v_ + u_, detail::math::two_pi<double>());
+  /// correction, normalized to the interval [0, 2π).
+  constexpr auto vu() const noexcept -> double {
+    return detail::math::normalize_angle(v_ + u_, 0.0,
+                                         detail::math::two_pi<double>());
   }
 
   /// @brief Sets the nodal corrections directly (for bulk updates with known

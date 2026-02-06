@@ -237,7 +237,7 @@ class WaveTableInterface {
   /// @brief Type for wave factory functions.
   using WaveFactoryFunction = std::unique_ptr<WaveInterface> (*)(ConstituentId);
 
-  /// @brief Polpulate the table with the given constituents using the provided
+  /// @brief Populate the table with the given constituents using the provided
   /// wave factory function. Call this in derived class constructors after
   /// get_factory() is available.
   /// @param constituents List of constituent identifiers to include in the

@@ -64,7 +64,7 @@ inline auto check_nodal_phase(const WaveTable& table) -> void {
         EXPECT_NEAR(detail::math::degrees(wave->vu()), 90.0, 1e-8);
         break;
       case kK1:
-        EXPECT_NEAR(detail::math::degrees(wave->vu()), -89.0, 1e-8);
+        EXPECT_NEAR(detail::math::degrees(wave->vu()), 271.0, 1e-8);
         break;
       case k2N2:
         EXPECT_NEAR(detail::math::degrees(wave->vu()), 2.0, 1e-8);
@@ -133,34 +133,34 @@ inline auto check_nodal_phase(const WaveTable& table) -> void {
         EXPECT_NEAR(detail::math::degrees(wave->vu()), 91.0, 1e-8);
         break;
       case kM1:
-        EXPECT_NEAR(detail::math::degrees(wave->vu()), -89.51674239, 1e-8);
+        EXPECT_NEAR(detail::math::degrees(wave->vu()), 270.48325761, 1e-8);
         break;
       case kM11:
-        EXPECT_NEAR(detail::math::degrees(wave->vu()), -89.0, 1e-8);
+        EXPECT_NEAR(detail::math::degrees(wave->vu()), 271.0, 1e-8);
         break;
       case kM12:
-        EXPECT_NEAR(detail::math::degrees(wave->vu()), -89.0, 1e-8);
+        EXPECT_NEAR(detail::math::degrees(wave->vu()), 271.0, 1e-8);
         break;
       case kM13:
         EXPECT_NEAR(detail::math::degrees(wave->vu()), 1.0, 1e-8);
         break;
       case kChi1:
-        EXPECT_NEAR(detail::math::degrees(wave->vu()), -89.0, 1e-8);
+        EXPECT_NEAR(detail::math::degrees(wave->vu()), 271.0, 1e-8);
         break;
       case kPi1:
         EXPECT_NEAR(detail::math::degrees(wave->vu()), 90.0, 1e-8);
         break;
       case kPhi1:
-        EXPECT_NEAR(detail::math::degrees(wave->vu()), -86.0, 1e-8);
+        EXPECT_NEAR(detail::math::degrees(wave->vu()), 274.0, 1e-8);
         break;
       case kTheta1:
-        EXPECT_NEAR(detail::math::degrees(wave->vu()), -89.0, 1e-8);
+        EXPECT_NEAR(detail::math::degrees(wave->vu()), 271.0, 1e-8);
         break;
       case kJ1:
-        EXPECT_NEAR(detail::math::degrees(wave->vu()), -89.0, 1e-8);
+        EXPECT_NEAR(detail::math::degrees(wave->vu()), 271.0, 1e-8);
         break;
       case kOO1:
-        EXPECT_NEAR(detail::math::degrees(wave->vu()), -89.0, 1e-8);
+        EXPECT_NEAR(detail::math::degrees(wave->vu()), 271.0, 1e-8);
         break;
       case kM3:
         EXPECT_NEAR(detail::math::degrees(wave->vu()), 3.0, 1e-8);
@@ -217,13 +217,13 @@ inline auto check_nodal_phase(const WaveTable& table) -> void {
         EXPECT_NEAR(detail::math::degrees(wave->vu()), 6.0, 1e-8);
         break;
       case kMP1:
-        EXPECT_NEAR(detail::math::degrees(wave->vu()), -89.0, 1e-8);
+        EXPECT_NEAR(detail::math::degrees(wave->vu()), 271.0, 1e-8);
         break;
       case k2SM2:
         EXPECT_NEAR(detail::math::degrees(wave->vu()), 2.0, 1e-8);
         break;
       case kPsi1:
-        EXPECT_NEAR(detail::math::degrees(wave->vu()), -88.0, 1e-8);
+        EXPECT_NEAR(detail::math::degrees(wave->vu()), 272.0, 1e-8);
         break;
       case k2MS2:
         EXPECT_NEAR(detail::math::degrees(wave->vu()), 2.0, 1e-8);
@@ -244,7 +244,7 @@ inline auto check_nodal_phase(const WaveTable& table) -> void {
         EXPECT_NEAR(detail::math::degrees(wave->vu()), 93.0, 1e-8);
         break;
       case kMK3:
-        EXPECT_NEAR(detail::math::degrees(wave->vu()), -87.0, 1e-8);
+        EXPECT_NEAR(detail::math::degrees(wave->vu()), 273.0, 1e-8);
         break;
       case kS6:
         EXPECT_NEAR(detail::math::degrees(wave->vu()), 6.0, 1e-8);
@@ -274,19 +274,19 @@ inline auto check_nodal_phase(const WaveTable& table) -> void {
         EXPECT_NEAR(detail::math::degrees(wave->vu()), 180.0, 1e-8);
         break;
       case kMm2:
-        EXPECT_NEAR(detail::math::degrees(wave->vu()), -90.0, 1e-8);
+        EXPECT_NEAR(detail::math::degrees(wave->vu()), 270.0, 1e-8);
         break;
       case kMf1:
         EXPECT_NEAR(detail::math::degrees(wave->vu()), 0.0, 1e-8);
         break;
       case kMf2:
-        EXPECT_NEAR(detail::math::degrees(wave->vu()), -90.0, 1e-8);
+        EXPECT_NEAR(detail::math::degrees(wave->vu()), 270.0, 1e-8);
         break;
       case kM0:
         EXPECT_NEAR(detail::math::degrees(wave->vu()), 0.0, 1e-8);
         break;
       case kL2P:
-        EXPECT_NEAR(detail::math::degrees(wave->vu()), -88, 1e-8);
+        EXPECT_NEAR(detail::math::degrees(wave->vu()), 272, 1e-8);
         break;
       case kN2P:
         EXPECT_NEAR(detail::math::degrees(wave->vu()), 92, 1e-8);
@@ -325,7 +325,7 @@ inline auto check_nodal_phase(const WaveTable& table) -> void {
         EXPECT_NEAR(detail::math::degrees(wave->vu()), 4, 1e-8);
         break;
       case kSO1:
-        EXPECT_NEAR(detail::math::degrees(wave->vu()), -89, 1e-8);
+        EXPECT_NEAR(detail::math::degrees(wave->vu()), 271, 1e-8);
         break;
       case kSO3:
         EXPECT_NEAR(detail::math::degrees(wave->vu()), 93, 1e-8);
@@ -343,7 +343,7 @@ inline auto check_nodal_phase(const WaveTable& table) -> void {
         EXPECT_NEAR(detail::math::degrees(wave->vu()), 8, 1e-8);
         break;
       case kSK3:
-        EXPECT_NEAR(detail::math::degrees(wave->vu()), -87, 1e-8);
+        EXPECT_NEAR(detail::math::degrees(wave->vu()), 273, 1e-8);
         break;
       case k2MNS4:
         EXPECT_NEAR(detail::math::degrees(wave->vu()), 4, 1e-8);

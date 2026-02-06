@@ -76,7 +76,7 @@ class Accelerator {
     if (*type_info != typeid(T)) {
       return nullptr;
     }
-    return reinterpret_cast<T*>(this);
+    return dynamic_cast<T*>(this);
   }
 
   /// @brief Returns the tidal constituent values interpolated at the given
@@ -163,6 +163,9 @@ class TidalModelInterface
     for (auto& item : data_) {
       wt_instance[item.first]->set_is_modeled(true);
     }
+    for(auto& item : dynamic_) {
+      wt_instance[item]->set_is_modeled(true);
+    }
     return wt;
   }
 
@@ -206,17 +209,7 @@ class TidalModelInterface
   }
 
   /// Get the dynamic tidal constituents not interpolated by the model.
-  inline auto dynamic() const -> std::vector<std::string> {
-    auto result = std::vector<std::string>();
-    result.reserve(dynamic_.size());
-    for (const auto& item : dynamic_) {
-      result.emplace_back(constituents::name(item));
-    }
-    return result;
-  }
-
-  /// Get the dynamic tidal constituents not interpolated by the model.
-  constexpr auto dynamic_ids() const noexcept
+  constexpr auto dynamic() const noexcept
       -> const std::vector<ConstituentId>& {
     return dynamic_;
   }

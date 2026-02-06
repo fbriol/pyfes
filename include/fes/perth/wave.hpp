@@ -23,13 +23,13 @@ class Wave : public WaveInterface {
   Wave(const ConstituentId ident, WaveType type,
        Vector7b doodson_numbers) noexcept
       : WaveInterface(ident, type),
-        doodson_numbers_(std::move(doodson_numbers)) {}
+        doodson_numbers_(std::move(doodson_numbers)),
+        freq_(detail::math::radians(tidal_frequency(doodson_numbers_))) {}
 
   /// @brief Gets the frequency in radians per hour.
   /// @return The frequency in radians per hour.
   auto frequency() const noexcept -> double final {
-    return detail::math::radians(
-        tidal_frequency(doodson_numbers_.head(6).cast<double>()));
+    return freq_;
   }
 
   /// @brief Clones the wave.
@@ -64,6 +64,7 @@ class Wave : public WaveInterface {
 
  private:
   Vector7b doodson_numbers_;  //!< Doodson number of the constituent
+  double freq_;               //!< Frequency in radians per hour
 };
 
 namespace wave {

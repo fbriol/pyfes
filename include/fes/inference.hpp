@@ -161,7 +161,7 @@ inline auto SplineInference::apply_impl(WaveTableInterface& wave_table,
   // infer additional constituents by admittance DIURNALS (from Richard Ray
   // perth2 program)
 
-  // from Q1 and O1 (0-1)
+  // from Q1, O1 (0-1)
 
   auto* x = wave_table[kQ1].get();
   auto* y = wave_table[kO1].get();
@@ -182,7 +182,7 @@ inline auto SplineInference::apply_impl(WaveTableInterface& wave_table,
   // rho1
   set_tide(wave_table[kRho1].get(), 0.164 * x->tide() + 0.0048 * y->tide());
 
-  // from O1 and K1  (1-2)
+  // from O1, K1  (1-2)
 
   // M11
   set_tide(wave_table[kM11].get(), 0.0140 * y->tide() + 0.0101 * z->tide());
@@ -211,7 +211,7 @@ inline auto SplineInference::apply_impl(WaveTableInterface& wave_table,
   // infer additional constituents by admittance SEMI-DIURNALS
   // (from Richard Ray perth3 program)
 
-  // from M2 - N2
+  // from M2, N2
   x = wave_table[kN2].get();
   y = wave_table[kM2].get();
 
@@ -220,14 +220,14 @@ inline auto SplineInference::apply_impl(WaveTableInterface& wave_table,
 
   // SEMI-DIURNAL (from Grenoble to take advantage of 2N2)
 
-  // from 2N2 -N2 (3-4)
+  // from 2N2, N2 (3-4)
   x = wave_table[k2N2].get();
   y = wave_table[kN2].get();
 
   // eps2
   set_tide(wave_table[kEps2].get(), 0.53285 * x->tide() - 0.03304 * y->tide());
 
-  // from M2 - K2 [5-6]
+  // from M2, K2 [5-6]
   x = wave_table[kN2].get();
   y = wave_table[kM2].get();
   z = wave_table[kK2].get();
@@ -236,7 +236,7 @@ inline auto SplineInference::apply_impl(WaveTableInterface& wave_table,
   set_tide(wave_table[kEta2].get(),
            -0.0034925 * y->tide() + 0.0831707 * z->tide());
 
-  // from N2 -M2- K2 by spline admittances [see GRL 18[5]:845-848,1991]
+  // from N2, M2, K2 by spline admittances [see GRL 18[5]:845-848,1991]
 
   // mu2
   set_tide(wave_table[kMu2].get(),
@@ -276,12 +276,8 @@ auto populate_and_sort_inferred(
   for (const auto& item : inferred) {
     const auto ident = item.first;
     const auto ampl = item.second;
-    // Don't use auto here to avoid dangling reference to temporary Vector6d
-    // created by head(6).template cast<double>()
-    const Vector6d doodson_number =
-        wave_table[ident]->doodson_numbers().head(6).template cast<double>();
-    mutable_inferred.insert(ident,
-                            {perth::tidal_frequency(doodson_number), ampl});
+    mutable_inferred.insert(
+        ident, {wave_table[ident]->template frequency<kDegreePerHour>(), ampl});
     keys.push_back(ident);
   }
 

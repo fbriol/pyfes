@@ -66,7 +66,8 @@ inline auto evaluate_tide(const TidalModelInterface<T>& tidal_model,
                           LongPeriodEquilibrium& long_period, Accelerator& acc)
     -> std::tuple<double, double, Quality> {
   const auto compute_long_period_equilibrium =
-      tidal_model.tide_type() == fes::kTide;
+      tidal_model.tide_type() == fes::kTide &&
+      settings.compute_long_period_equilibrium();
 
   // Interpolation, at the requested position, of the waves provided by the
   // model used.

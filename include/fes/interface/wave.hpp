@@ -22,6 +22,12 @@ enum FrequencyUnit : uint8_t {
   kDegreePerHour   ///< Degree per hour
 };
 
+/// @brief Angular unit enumeration.
+enum AngleUnit : uint8_t {
+  kRadian,  ///< Radian
+  kDegree   ///< Degree
+};
+
 /// @brief Gets the frequency scale factor based on the specified unit.
 /// @tparam U The frequency unit.
 /// @return The frequency scale factor.
@@ -172,10 +178,11 @@ class WaveInterface {
   /// @param f Nodal correction for amplitude.
   /// @param u Nodal correction for phase.
   /// @param v Greenwich argument.
-  constexpr void set_nodal_corrections(double f, double u, double v) noexcept {
+  /// @param unit The angular unit of the nodal corrections.
+  constexpr void set_nodal_corrections(double f, double u, double v, AngleUnit unit) noexcept {
     f_ = f;
-    u_ = u;
-    v_ = v;
+    u_ = unit == AngleUnit::kRadian ? u : detail::math::radians(u);
+    v_ = unit == AngleUnit::kRadian ? v : detail::math::radians(v);
   }
 
   /// @brief Computes the nodal corrections for the wave.

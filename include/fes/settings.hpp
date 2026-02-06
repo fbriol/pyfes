@@ -112,6 +112,8 @@ class Settings {
   EngineType engine_type_{EngineType::kDarwin};
   /// @brief Astronomic formulae used to calculate the astronomic angles.
   angle::Formulae astronomic_formulae_{angle::Formulae::kSchuremanOrder1};
+  /// Type of inference interpolation to use
+  InferenceType inference_type_{InferenceType::kSpline};
   /// @brief Time in seconds for which astronomical angles are considered
   /// constant.
   double time_tolerance_{0.0};
@@ -119,8 +121,6 @@ class Settings {
   bool group_modulations_{false};
   /// Whether to compute the long period equilibrium tide.
   bool compute_long_period_equilibrium_{true};
-  /// Type of inference interpolation to use
-  InferenceType inference_type_{InferenceType::kSpline};
   /// Number of threads to use for computation
   size_t num_threads_{0};
 };
@@ -145,6 +145,8 @@ class PerthSettings : public Settings {
     engine_type_ = EngineType::kDoodson;
     astronomic_formulae_ = angle::Formulae::kIERS;
     inference_type_ = InferenceType::kLinear;
+    compute_long_period_equilibrium_ = false;
+
   }
 };
 

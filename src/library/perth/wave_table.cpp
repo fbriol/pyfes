@@ -223,7 +223,8 @@ auto WaveTable::compute_nodal_corrections(const angle::Astronomic& angles,
     auto tidal_argument = calculate_doodson_argument(
         angles, component->doodson_numbers().template cast<double>());
     component->set_nodal_corrections(nodal_corrections[ix].f,
-                                     nodal_corrections[ix].u, tidal_argument);
+                                     nodal_corrections[ix].u, tidal_argument,
+                                     AngleUnit::kDegree);
   }
 }
 

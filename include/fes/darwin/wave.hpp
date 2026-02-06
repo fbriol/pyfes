@@ -15,6 +15,7 @@
 #include "fes/detail/angle/astronomic/frequency.hpp"
 #include "fes/detail/math.hpp"
 #include "fes/interface/wave.hpp"
+#include "fes/numbers.hpp"
 #include "fes/xdo.hpp"
 
 namespace fes {
@@ -44,9 +45,7 @@ class Wave : public WaveInterface {
 
   /// @brief Gets the frequency in radians per hour.
   /// @return The frequency in radians per hour.
-  auto frequency() const noexcept -> double final {
-    return freq_;
-  }
+  auto frequency() const noexcept -> double final { return freq_; }
 
   /// @brief Clones the wave.
   /// @return A unique pointer to the cloned wave.
@@ -322,7 +321,8 @@ class M1 : public Wave {
   inline void nodal_g(const angle::Astronomic& a) final {
     Wave::nodal_g(a);
     u_ -= detail::math::radians(
-        1.0 / std::sqrt(2.310 + 1.435 * std::cos(2 * (a.p() - a.xi()))));
+        1.0 / std::sqrt(numbers::k197_1 +
+                        numbers::k197_2 * std::cos(2 * (a.p() - a.xi()))));
   }
 };
 

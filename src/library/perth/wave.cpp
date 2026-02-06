@@ -17,9 +17,10 @@ auto Wave::compute_nodal_corrections(const angle::Astronomic& angles,
                                      const bool group_modulations) -> void {
   auto nc = NodalCorrectionProcessor(
       NodalCorrectionsArgs{angles, group_modulations})(ident());
-  f_ = nc.f;
-  u_ = nc.u;
-  v_ = calculate_doodson_argument(angles, doodson_numbers_.cast<double>());
+  set_nodal_corrections(
+      nc.f, nc.u,
+      calculate_doodson_argument(angles, doodson_numbers_.cast<double>()),
+      AngleUnit::kDegree);
 }
 
 namespace wave {

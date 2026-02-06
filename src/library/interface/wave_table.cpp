@@ -10,6 +10,7 @@
 #include <tuple>
 #include <vector>
 
+#include "fes/detail/markdown_table.hpp"
 #include "fes/detail/parallel_for.hpp"
 #include "fes/interface/wave.hpp"
 
@@ -123,6 +124,20 @@ auto WaveTableInterface::compute_nodal_modulations(
     }
   }
   return std::make_tuple(f, vu);
+}
+
+// ============================================================================
+auto WaveTableInterface::generate_markdown_table() const -> std::string {
+  detail::MarkdownTable constituents_table(
+      {"Constituent", "Speed (Deg/hr)", "XDO"});
+  for (const auto& item : *this) {
+    const auto& wave = item.value();
+
+    constituents_table.add_row(
+        {wave->latex_name(), std::to_string(wave->frequency<kDegreePerHour>()),
+         wave->xdo_alphabetical()});
+  }
+  return constituents_table.to_string();
 }
 
 }  // namespace fes

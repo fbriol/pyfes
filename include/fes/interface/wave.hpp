@@ -111,6 +111,10 @@ class WaveInterface {
   /// @return The name of the tidal wave.
   inline auto name() const -> const char* { return constituents::name(id_); }
 
+  /// @brief Gets the latex name of the tidal wave.
+  /// @return The latex name of the tidal wave.
+  auto latex_name() const -> std::string;
+
   /// @brief Gets the type of tidal wave.
   /// @return The type of tidal wave.
   constexpr auto type() const noexcept -> WaveType { return type_; }

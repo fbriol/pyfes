@@ -281,6 +281,10 @@ class WaveTableInterface {
     return map_.contains(ident);
   }
 
+  /// @brief Generate a markdown table summarizing the constituents handled by
+  /// the wave table.
+  auto generate_markdown_table() const -> std::string;
+
  protected:
   /// @brief Type for wave factory functions.
   using WaveFactoryFunction = std::unique_ptr<WaveInterface> (*)(ConstituentId);

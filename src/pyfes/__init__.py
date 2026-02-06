@@ -26,6 +26,8 @@ from .core import (
     Settings as Settings,
     TideType as TideType,
     tidal_model as tidal_model,
+    darwin as darwin,
+    perth as perth,
     Axis as Axis,
 )
 from . import core
@@ -34,7 +36,6 @@ from .type_hints import (
     VectorFloat64,
     VectorInt8,
 )
-from .core import darwin, perth, tidal_model
 from . import config as config
 from .version import __version__  # noqa: F401
 

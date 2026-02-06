@@ -21,6 +21,8 @@ auto WaveInterface::latex_name() const -> std::string {
     auto pos = name.find(item.first);
     if (pos != std::string::npos) {
       name.replace(pos, item.first.length(), item.second);
+      name.insert(0, "$");
+      name.append("$");
     }
   }
   return name;

@@ -14,22 +14,22 @@ namespace constituents {
 
 constexpr auto kConstituentNames =
     std::array<const char* const, kNumConstituents>{
-        "2mk2",  "2mk3",  "2mk6",  "2mn2",   "2mn6", "2mns4",   "2mp5",
-        "2ms2",  "2ms6",  "2msn4", "2n2",    "2nm6", "2ns2",    "2q1",
-        "2sm2",  "2sm6",  "2smu2", "3ms4",   "3ms8", "a5",      "alpha2",
-        "beta1", "beta2", "chi1",  "delta2", "eps2", "eta2",    "gamma2",
-        "j1",    "k1",    "k2",    "l2",     "l2p",  "lambda2", "m0",
-        "m1",    "m11",   "m12",   "m13",    "m2",   "m3",      "m4",
-        "m6",    "m8",    "mf",    "mf1",    "mf2",  "mk3",     "mk4",
-        "mks2",  "ml4",   "mm",    "mm1",    "mm2",  "mn4",     "mnk6",
-        "mns2",  "mnu4",  "mnus2", "mo3",    "mp1",  "mqm",     "ms4",
-        "msf",   "msk2",  "msk6",  "msm",    "msn2", "msn6",    "msqm",
-        "mstm",  "mtm",   "mu2",   "n2",     "n2p",  "n4",      "nk4",
-        "nkm2",  "node",  "nu2",   "o1",     "oo1",  "oq2",     "p1",
-        "phi1",  "pi1",   "psi1",  "q1",     "r2",   "r4",      "rho1",
-        "s1",    "s2",    "s4",    "s6",     "sa",   "sa1",     "sigma1",
-        "sk3",   "sk4",   "skm2",  "sn4",    "so1",  "so3",     "ssa",
-        "sta",   "t2",    "tau1",  "theta1", "ups1",
+        "2MK2",  "2MK3",  "2MK6",  "2MN2",   "2MN6", "2MNS4",   "2MP5",
+        "2MS2",  "2MS6",  "2MSN4", "2N2",    "2NM6", "2NS2",    "2Q1",
+        "2SM2",  "2SM6",  "2SMu2", "3MS4",   "3MS8", "A5",      "Alpha2",
+        "Beta1", "Beta2", "Chi1",  "Delta2", "Eps2", "Eta2",    "Gamma2",
+        "J1",    "K1",    "K2",    "L2",     "L2P",  "Lambda2", "M0",
+        "M1",    "M11",   "M12",   "M13",    "M2",   "M3",      "M4",
+        "M6",    "M8",    "Mf",    "Mf1",    "Mf2",  "MK3",     "MK4",
+        "MKS2",  "ML4",   "Mm",    "Mm1",    "Mm2",  "MN4",     "MNK6",
+        "MNS2",  "MNu4",  "MNuS2", "MO3",    "MP1",  "Mqm",     "MS4",
+        "MSf",   "MSK2",  "MSK6",  "MSm",    "MSN2", "MSN6",    "MSqm",
+        "MStm",  "Mtm",   "Mu2",   "N2",     "N2P",  "N4",      "NK4",
+        "NKM2",  "Node",  "Nu2",   "O1",     "OO1",  "OQ2",     "P1",
+        "Phi1",  "Pi1",   "Psi1",  "Q1",     "R2",   "R4",      "Rho1",
+        "S1",    "S2",    "S4",    "S6",     "Sa",   "Sa1",     "Sigma1",
+        "SK3",   "SK4",   "SKM2",  "SN4",    "SO1",  "SO3",     "Ssa",
+        "Sta",   "T2",    "Tau1",  "Theta1", "Ups1",
     };
 
 auto parse(const std::string& constituent_name) -> ConstituentId {

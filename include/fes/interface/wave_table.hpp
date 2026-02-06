@@ -30,7 +30,6 @@ enum class EngineType : uint8_t {
 using ConstituentMap =
     EnumMap<ConstituentId, std::unique_ptr<WaveInterface>, kKnownConstituents>;
 
-
 /// @brief Helper function to extract the key from a `std::vector<T>`
 /// @tparam T The type of the elements in the vector
 /// @param val The value from which to extract the key
@@ -49,7 +48,6 @@ template <typename K, typename V>
 constexpr auto extract_key(const std::pair<K, V>& p) -> const K& {
   return p.first;
 }
-
 
 /// @brief Tidal wave table interface.
 class WaveTableInterface {
@@ -318,4 +316,4 @@ class WaveTableInterface {
 auto wave_table_factory(const EngineType engine_type)
     -> std::unique_ptr<WaveTableInterface>;
 
-  }  // namespace fes
+}  // namespace fes

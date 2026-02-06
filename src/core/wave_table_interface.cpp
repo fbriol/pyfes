@@ -8,9 +8,13 @@
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include <boost/optional.hpp>
+
 #include "fes/interface/wave_table.hpp"
 #include "fes/python/datemanip.hpp"
 #include "fes/python/datetime64.hpp"
+#include "fes/python/optional.hpp"  // IWYU pragma: keep
+#include "pybind11/cast.h"
 
 namespace py = pybind11;
 
@@ -244,6 +248,23 @@ Returns:
            &WaveTableInterface::generate_markdown_table,
            "Generate a markdown table summarizing the constituents handled by "
            "the wave table.")
+      .def(
+          "set_modeled_constituents",
+          [](WaveTableInterface& self, const std::vector<std::string>& names) {
+            std::vector<ConstituentId> ids;
+            ids.reserve(names.size());
+            for (const auto& name : names) {
+              ids.push_back(constituents::parse(name));
+            }
+            self.set_modeled_constituents(ids);
+          },
+          py::arg("names"),
+          R"__doc__(
+Set the list of constituents that are modeled by the wave table.
+
+Args:
+  names: List of constituent names.
+)__doc__")
       .def("__repr__", [](const WaveTableInterface& self) -> std::string {
         return "<WaveTableInterface with " + std::to_string(self.size()) +
                " constituents>";
@@ -251,12 +272,25 @@ Returns:
 }
 
 inline auto init_wave_table_factory(py::module& m) -> void {
-  m.def("wave_table_factory", &wave_table_factory, py::arg("engine_type"),
-        R"__doc__(
+  m.def(
+      "wave_table_factory",
+      [](const EngineType engine_type,
+         const boost::optional<std::vector<std::string>>& constituents) {
+        if (constituents) {
+          return wave_table_factory(engine_type, *constituents);
+        } else {
+          return wave_table_factory(engine_type);
+        }
+      },
+      py::arg("engine_type") = EngineType::kDarwin,
+      py::arg("constituents") = boost::none,
+      R"__doc__(
 Factory function to create a wave table based on the specified engine type.
 
 Args:
   engine_type: The engine type for the tidal constituent notation system.
+  constituents: Optional list of constituent names to include in the wave table.
+    If not provided, all known constituents for the engine type are included.
 
 Returns:
   A wave table instance.

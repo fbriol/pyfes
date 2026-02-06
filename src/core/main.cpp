@@ -12,8 +12,9 @@ extern void init_cartesian_model(py::module& m);
 extern void init_constituents(py::module& m);
 extern void init_darwin(py::module& m);
 extern void init_datemanip(py::module& m);
-extern void init_lpe_tide(py::module& m);
+extern void init_harmonic_analysis(py::module& m);
 extern void init_lgp_model(py::module& m);
+extern void init_lpe_tide(py::module& m);
 extern void init_mesh_index(py::module& m);
 extern void init_perth(py::module& m);
 extern void init_settings(py::module& m);
@@ -25,6 +26,9 @@ extern void init_wave_table_interface(py::module& m);
 PYBIND11_MODULE(core, m) {
   m.doc() = "FES Tidal Prediction Library";
   auto tidal_model = m.def_submodule("tidal_model", "Tidal model handlers");
+
+  // Harmonic analysis function
+  init_harmonic_analysis(m);
 
   // Common types and utilities
   init_angle(m);

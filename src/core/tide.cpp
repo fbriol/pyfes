@@ -50,7 +50,8 @@ auto py_evaluate_tide_from_constituents(
     for (const auto& item : constituents) {
       constituents_parsed.emplace(
           constituents::parse(item.first),
-          Complex{item.second.first, item.second.second});
+          std::polar(item.second.first,
+                     detail::math::radians(item.second.second)));
     }
 
     return evaluate_tide_from_constituents(constituents_parsed, epoch, latitude,

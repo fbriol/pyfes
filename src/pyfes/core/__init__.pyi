@@ -4,8 +4,11 @@ import numpy.typing
 import typing
 from typing import ClassVar, overload
 
+from . import darwin as darwin, perth as perth, tidal_model as tidal_model
+
 from ..type_hints import (
     MatrixComplex128,
+    MatrixFloat64,
     VectorComplex128,
     VectorComplex64,
     VectorDateTime64,
@@ -48,9 +51,15 @@ __all__ = [
     'WaveInterface',
     'WaveTableInterface',
     'WaveType',
+    'darwin',
     'evaluate_tide',
     'evaluate_tide_from_constituents',
     'generate_markdown_table',
+    'harmonic_analysis',
+    'known_constituents',
+    'parse_constituent',
+    'perth',
+    'tidal_model',
     'wave_table_factory',
 ]
 
@@ -373,6 +382,9 @@ class WaveTableInterface:
     def select_waves_for_analysis(
         self, duration: typing.SupportsFloat, f: typing.SupportsFloat = ...
     ) -> list[str]: ...
+    def set_modeled_constituents(
+        self, names: collections.abc.Sequence[str]
+    ) -> None: ...
     def set_tide(self, name: str, value: complex) -> None: ...
     def tide_from_mapping(
         self,
@@ -449,6 +461,10 @@ def generate_markdown_table(
     settings: Settings,
     modeled_constituents: collections.abc.Sequence[str] = ...,
 ) -> str: ...
+def harmonic_analysis(h: MatrixFloat64, f: MatrixFloat64, vu: MatrixFloat64) -> VectorComplex128: ...
 def known_constituents() -> list[str]: ...
 def parse_constituent(name: str) -> int: ...
-def wave_table_factory(engine_type: EngineType) -> WaveTableInterface: ...
+def wave_table_factory(
+    engine_type: EngineType = ...,
+    constituents: collections.abc.Sequence[str] | None = ...,
+) -> WaveTableInterface: ...

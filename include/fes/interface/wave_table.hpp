@@ -316,8 +316,22 @@ class WaveTableInterface {
 
 /// @brief Factory function to create a wave table based on the specified engine
 /// type.
+/// @param[in] engine_type The type of the engine for which to create the wave
+/// table.
 /// @return A unique pointer to the created wave table.
 auto wave_table_factory(const EngineType engine_type)
+    -> std::unique_ptr<WaveTableInterface>;
+
+/// @brief Factory function to create a sparse wave table based on the specified
+/// engine type and list of constituents.
+/// @param[in] engine_type The type of the engine for which to create the wave
+/// table.
+/// @param[in] constituents The list of constituent identifiers to include in
+/// the wave table. If empty, all known constituents for the engine type are
+/// included.
+/// @return A unique pointer to the created wave table.
+auto wave_table_factory(const EngineType engine_type,
+                        const std::vector<std::string>& constituents)
     -> std::unique_ptr<WaveTableInterface>;
 
 }  // namespace fes

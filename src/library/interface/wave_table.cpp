@@ -1,6 +1,6 @@
 #include "fes/interface/wave_table.hpp"
 
-#include <Eigen/Dense>
+#include <Eigen/Core>
 #include <cmath>
 #include <cstddef>
 #include <cstdint>

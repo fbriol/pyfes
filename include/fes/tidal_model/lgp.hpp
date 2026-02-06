@@ -248,7 +248,7 @@ class LGP : public TidalModelInterface<T> {
   /// @param[inout] quality Quality indicator.
   auto perform_lgp_interpolation(const Eigen::Matrix<double, N * 3, 1>& beta,
                                  const typename CodesType::ConstRowXpr& codes,
-                                 LGPAccelerator* acc, Quality& quality) const
+                                 LGPAccelerator& acc, Quality& quality) const
       -> void;
 
  private:
@@ -272,7 +272,7 @@ class LGP : public TidalModelInterface<T> {
   /// from the mesh index.
   auto extrapolate(const geometry::Point& point, Quality& quality,
                    const std::vector<mesh::VertexAttribute>& nearest_vertices,
-                   LGPAccelerator* acc) const -> void;
+                   LGPAccelerator& acc) const -> void;
 };
 
 /// @brief %LGP1 tidal model.
@@ -481,7 +481,7 @@ auto LGP<T, N>::inverse_distance_weighting(
       sum_of_weights += weight;
       sum_of_weighted_values += weight * value;
     }
-    acc->emplace_back(item.first, sum_of_weighted_values / sum_of_weights);
+    acc.emplace_back(item.first, sum_of_weighted_values / sum_of_weights);
   }
 }
 
@@ -490,7 +490,7 @@ template <typename T, int N>
 auto LGP<T, N>::extrapolate(
     const geometry::Point& point, Quality& quality,
     const std::vector<mesh::VertexAttribute>& nearest_vertices,
-    LGPAccelerator* acc) const -> void {
+    LGPAccelerator& acc) const -> void {
   const auto n = nearest_vertices.size();
   assert(n > 0);
 
@@ -559,7 +559,7 @@ auto LGP<T, N>::handle_vertex_interpolation(
 template <typename T, int N>
 auto LGP<T, N>::perform_lgp_interpolation(
     const Eigen::Matrix<double, N * 3, 1>& beta,
-    const typename CodesType::ConstRowXpr& codes, LGPAccelerator* acc,
+    const typename CodesType::ConstRowXpr& codes, LGPAccelerator& acc,
     Quality& quality) const -> void {
   if (selected_indices_.empty()) {
     // First case: no bounding box is provided, we interpolate all the LGP codes
@@ -571,7 +571,7 @@ auto LGP<T, N>::perform_lgp_interpolation(
       for (auto ix = 0; ix < N * 3; ++ix) {
         dot += beta(ix) * static_cast<Complex>(wave(codes(ix)));
       }
-      acc->emplace_back(item.first, dot);
+      acc.emplace_back(item.first, dot);
     }
   } else {
     // Second case: a bounding box is provided, we interpolate the selected LGP
@@ -591,7 +591,7 @@ auto LGP<T, N>::perform_lgp_interpolation(
         }
         dot += beta(ix) * static_cast<Complex>(wave(it->second));
       }
-      acc->emplace_back(item.first, dot);
+      acc.emplace_back(item.first, dot);
     }
   }
   quality = static_cast<Quality>(N * 3);

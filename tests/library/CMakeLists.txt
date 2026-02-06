@@ -19,10 +19,18 @@ macro(ADD_TESTCASE testname)
 endmacro()
 
 
+add_testcase(axis fes)
+add_testcase(darwin)
+add_testcase(delta_time)
 add_testcase(inference fes)
 add_testcase(long_period_equilibrium fes)
 add_testcase(tide fes)
+add_testcase(xdo)
 
 add_subdirectory(angle)
+add_subdirectory(detail)
+add_subdirectory(geometry)
+add_subdirectory(mesh)
 add_subdirectory(darwin)
 add_subdirectory(perth)
+add_subdirectory(tidal_model)

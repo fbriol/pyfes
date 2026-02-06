@@ -27,9 +27,6 @@ PYBIND11_MODULE(core, m) {
   m.doc() = "FES Tidal Prediction Library";
   auto tidal_model = m.def_submodule("tidal_model", "Tidal model handlers");
 
-  // Harmonic analysis function
-  init_harmonic_analysis(m);
-
   // Common types and utilities
   init_angle(m);
   init_axis(m);

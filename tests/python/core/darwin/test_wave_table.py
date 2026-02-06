@@ -129,7 +129,7 @@ def test_harmonic_analysis() -> None:
         ],
     )
     f, vu = wt.compute_nodal_modulations(time)
-    w = core.harmonic_analysis(h, f, vu)
+    w = wt.harmonic_analysis(h, f, vu)
     delta = h - wt.tide_from_tide_series(time, w)
 
     assert delta.mean(), pytest.approx(0, rel=1e-16)
@@ -145,12 +145,14 @@ def test_harmonic_analysis_with_empty_table() -> None:
     )
     h = numpy.random.default_rng().random(time.shape[0])
 
-    wt = core.wave_table_factory(core.DARWIN, ['M2', 'S2', 'N2', 'K1', 'O1', 'Q1'])
-    w = core.harmonic_analysis(h, *wt.compute_nodal_modulations(time))
+    wt = core.wave_table_factory(
+        core.DARWIN, ['M2', 'S2', 'N2', 'K1', 'O1', 'Q1']
+    )
+    w = wt.harmonic_analysis(h, *wt.compute_nodal_modulations(time))
     assert numpy.all(~numpy.isnan(wt.tide_from_tide_series(time, w)))
 
     wt = core.wave_table_factory(core.DARWIN)
-    w = core.harmonic_analysis(h, *wt.compute_nodal_modulations(time))
+    w = wt.harmonic_analysis(h, *wt.compute_nodal_modulations(time))
     assert numpy.all(~numpy.isnan(wt.tide_from_tide_series(time, w)))
 
 
@@ -210,7 +212,9 @@ def test_concurrent_wave_table_access() -> None:
         rng = numpy.random.default_rng(seed=worker_id)
         try:
             # Create independent wave table
-            wave_table = core.wave_table_factory(core.DARWIN, ['S1', 'S2', 'M2', 'K1', 'O1'])
+            wave_table = core.wave_table_factory(
+                core.DARWIN, ['S1', 'S2', 'M2', 'K1', 'O1']
+            )
 
             # Perform various operations
             for _ in range(50):
@@ -233,7 +237,7 @@ def test_concurrent_wave_table_access() -> None:
                     )
                     f, vu = wave_table.compute_nodal_modulations(dates)
                     h = rng.random((10,))
-                    result = core.harmonic_analysis(h, f, vu)
+                    result = wave_table.harmonic_analysis(h, f, vu)
                     assert result.shape == (5,)
 
                 # Small delay to increase chance of race conditions

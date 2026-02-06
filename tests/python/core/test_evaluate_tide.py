@@ -285,21 +285,13 @@ def test_evaluate_tide_from_constituents() -> None:
         constituents,
         dates,
         BREST_LOCATION[1],
-        core.FesRuntimeSettings().with_num_threads(1).with_compute_long_period_equilibrium(True),
+        core.FesRuntimeSettings()
+        .with_num_threads(1)
+        .with_compute_long_period_equilibrium(True),
     )
     assert len(tide) == len(dates)
     assert len(long_period) == len(dates)
-    import matplotlib.pyplot as plt
-    plt.figure(figsize=(12, 6))
-    plt.plot(dates, tide, label='Tide (cm)')
-    plt.plot(dates, long_period, label='Long-Period (cm)')
-    plt.title('Tide and Long-Period Components at Brest (TICON-3 Data)')
-    plt.xlabel('Date')
-    plt.ylabel('Amplitude (cm)')
-    plt.legend()
-    plt.grid()
-    plt.tight_layout()
-    plt.savefig('brest_tide.png')
+
     # Simple checks on the output ranges
     assert -250 < tide.min() < 0
     assert 0 < tide.max() < 250

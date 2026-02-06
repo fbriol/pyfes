@@ -73,17 +73,6 @@ class PyWaveInterface : public WaveInterface {
 inline auto init_wave_interface(py::module& m) -> void {
   py::class_<WaveInterface, PyWaveInterface, std::unique_ptr<WaveInterface>>(
       m, "WaveInterface", "Tidal wave interface.")
-      .def(py::init<ConstituentId, WaveType>(), py::arg("ident"),
-           py::arg("type"),
-           R"__doc__(
-Build a tidal wave.
-
-Args:
-  ident: The constituent identifier.
-  type: The type of tidal wave.
-)__doc__")
-      .def_property_readonly("ident", &WaveInterface::ident,
-                             "The constituent identifier.")
       .def_property_readonly("name", &WaveInterface::name,
                              "The name of the tidal wave.")
       .def_property_readonly("latex_name", &WaveInterface::latex_name,

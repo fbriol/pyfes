@@ -12,6 +12,7 @@ extern void init_cartesian_model(py::module& m);
 extern void init_darwin(py::module& m);
 extern void init_datemanip(py::module& m);
 extern void init_lgp_model(py::module& m);
+extern void init_mesh_index(py::module& m);
 extern void init_perth(py::module& m);
 extern void init_settings(py::module& m);
 extern void init_tidal_model_interface(py::module& m);
@@ -35,6 +36,9 @@ PYBIND11_MODULE(core, m) {
 
   // Settings (depends on EngineType, Formulae, and InferenceType enums)
   init_settings(m);
+
+  // Mesh index
+  init_mesh_index(m);
 
   // Concrete implementations of WaveInterface and WaveTableInterface
   init_darwin(m);

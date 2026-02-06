@@ -28,8 +28,6 @@ encodes the tidal argument in terms of astronomical variables.
 )__doc__")
       .def_property_readonly("name", &Wave::name,
                              "The name of the tidal wave.")
-      .def_property_readonly("ident", &Wave::ident,
-                             "The constituent identifier.")
       .def_property_readonly("type", &Wave::type,
                              "The type of tidal wave.")
       .def(
@@ -86,56 +84,6 @@ Args:
       });
 }
 
-inline auto init_constituents(py::module& m) -> void {
-  auto constituents_mod =
-      m.def_submodule("constituents", "Perth constituent utilities.");
-
-  constituents_mod.def("parse", &constituents::parse, py::arg("name"),
-                       R"__doc__(
-Parse a tidal constituent name to its identifier.
-
-Parsing is case insensitive. So ``Mm``, ``MM`` and ``mm`` are equivalent.
-
-Args:
-  name: The constituent name.
-
-Returns:
-  The constituent identifier.
-
-Raises:
-  ValueError: If the constituent name is not recognized by the Perth model.
-)__doc__");
-
-  constituents_mod.def(
-      "name",
-      [](const ConstituentId ident) -> std::string {
-        return constituents::name(ident);
-      },
-      py::arg("ident"),
-      R"__doc__(
-Get the name of a tidal constituent from its identifier.
-
-Args:
-  ident: The constituent identifier.
-
-Returns:
-  The constituent name.
-)__doc__");
-
-  constituents_mod.def(
-      "known",
-      []() -> std::vector<std::string> {
-        auto names = constituents::known();
-        return {names.begin(), names.end()};
-      },
-      R"__doc__(
-Get all tidal constituent names handled by the Perth model.
-
-Returns:
-  List of all 80 Perth constituent names.
-)__doc__");
-}
-
 }  // namespace perth
 }  // namespace fes
 
@@ -143,5 +91,4 @@ void init_perth(py::module& m) {
   auto perth_mod = m.def_submodule("perth", "Perth tidal model components.");
   fes::perth::init_wave(perth_mod);
   fes::perth::init_wave_table(perth_mod);
-  fes::perth::init_constituents(perth_mod);
 }

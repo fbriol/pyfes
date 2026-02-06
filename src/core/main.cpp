@@ -11,6 +11,7 @@ extern void init_axis(py::module& m);
 extern void init_cartesian_model(py::module& m);
 extern void init_darwin(py::module& m);
 extern void init_datemanip(py::module& m);
+extern void init_lpe_tide(py::module& m);
 extern void init_lgp_model(py::module& m);
 extern void init_mesh_index(py::module& m);
 extern void init_perth(py::module& m);
@@ -50,4 +51,5 @@ PYBIND11_MODULE(core, m) {
 
   // Tide evaluation function (depends on all the above)
   init_tide(m);
+  init_lpe_tide(m);
 }

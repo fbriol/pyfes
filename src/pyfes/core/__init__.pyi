@@ -203,6 +203,13 @@ class FrequencyUnit:
     @property
     def value(self) -> int: ...
 
+class LongPeriodEquilibrium:
+    def __init__(self) -> None: ...
+    def disable_dynamic_wave(self, wave_table: WaveTableInterface) -> None: ...
+    def lpe_minus_n_waves(
+        self, angles: AstronomicAngle, lat: typing.SupportsFloat
+    ) -> float: ...
+
 class InferenceType:
     __members__: ClassVar[dict] = ...  # read-only
     FOURIER: ClassVar[InferenceType] = ...
@@ -408,6 +415,12 @@ class WaveType:
     @property
     def value(self) -> int: ...
 
+def evaluate_equilibrium_long_period(
+    dates: VectorDateTime64,
+    latitudes: VectorFloat64,
+    constituents: collections.abc.Sequence[str],
+    settings: Settings | None = ...,
+) -> VectorFloat64: ...
 @overload
 def evaluate_tide(
     tidal_model: TidalModelInterfaceComplex128,

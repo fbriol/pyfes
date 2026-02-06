@@ -204,8 +204,7 @@ class TidalModelInterface
   }
 
   /// Get the dynamic tidal constituents not interpolated by the model.
-  constexpr auto dynamic() const noexcept
-      -> const std::vector<ConstituentId>& {
+  constexpr auto dynamic() const noexcept -> const std::vector<ConstituentId>& {
     return dynamic_;
   }
 

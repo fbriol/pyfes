@@ -1,0 +1,14 @@
+recursive-include examples *
+recursive-include docs *
+recursive-include src *
+recursive-include include *
+recursive-include third_party *
+recursive-include src *.pyi
+recursive-exclude scripts *
+include src/pyfes/version.py
+include CMakeLists.txt
+include setup.py
+global-exclude *.py[dco]
+global-exclude *.so
+prune docs/build
+prune build

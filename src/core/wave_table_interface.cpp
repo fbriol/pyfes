@@ -2,14 +2,13 @@
 //
 // All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-#include "fes/interface/wave_table.hpp"
-
 #include <pybind11/complex.h>
 #include <pybind11/eigen.h>
 #include <pybind11/numpy.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
+#include "fes/interface/wave_table.hpp"
 #include "fes/python/datemanip.hpp"
 #include "fes/python/datetime64.hpp"
 
@@ -38,17 +37,17 @@ class PyWaveTableInterface : public WaveTableInterface {
   }
 
   auto compute_nodal_corrections(const angle::Astronomic& angles,
-                                 const bool group_modulations) -> void override {
-    PYBIND11_OVERLOAD_PURE(void, WaveTableInterface,
-                           compute_nodal_corrections, angles,
-                           group_modulations);
+                                 const bool group_modulations)
+      -> void override {
+    PYBIND11_OVERLOAD_PURE(void, WaveTableInterface, compute_nodal_corrections,
+                           angles, group_modulations);
   }
 };
 
 inline auto init_wave_table_interface(py::module& m) -> void {
   py::class_<WaveTableInterface, PyWaveTableInterface,
-             std::unique_ptr<WaveTableInterface>>(
-      m, "WaveTableInterface", "Tidal wave table interface.")
+             std::unique_ptr<WaveTableInterface>>(m, "WaveTableInterface",
+                                                  "Tidal wave table interface.")
       .def(py::init<>(), "Default constructor.")
       .def(
           "__getitem__",
@@ -69,10 +68,8 @@ Returns:
 )__doc__")
       .def(
           "__getitem__",
-          [](const WaveTableInterface& self,
-             const size_t index) -> const WaveInterface& {
-            return *self[index];
-          },
+          [](const WaveTableInterface& self, const size_t index)
+              -> const WaveInterface& { return *self[index]; },
           py::arg("index"), py::return_value_policy::reference_internal,
           R"__doc__(
 Get the wave at the given index.
@@ -96,17 +93,18 @@ Returns:
             return result;
           },
           "Return a list of waves in the table.")
-      .def("__contains__",
-           [](const WaveTableInterface& self, const std::string& name) -> bool {
-             try {
-               auto ident = constituents::parse(name);
-               return self.contains(ident);
-             } catch (const std::invalid_argument&) {
-               return false;
-             }
-           },
-           py::arg("name"),
-           R"__doc__(
+      .def(
+          "__contains__",
+          [](const WaveTableInterface& self, const std::string& name) -> bool {
+            try {
+              auto ident = constituents::parse(name);
+              return self.contains(ident);
+            } catch (const std::invalid_argument&) {
+              return false;
+            }
+          },
+          py::arg("name"),
+          R"__doc__(
 Check if a constituent is in the table.
 
 Args:
@@ -128,25 +126,25 @@ Args:
   group_modulations: If true, applies group modulations to nodal
     corrections.
 )__doc__")
-      .def("set_tide",
-           [](WaveTableInterface& self, const std::string& name,
-              const Complex& value) -> void {
-             auto ident = constituents::parse(name);
-             self.set_tide(ident, value);
-           },
-           py::arg("name"), py::arg("value"),
-           R"__doc__(
+      .def(
+          "set_tide",
+          [](WaveTableInterface& self, const std::string& name,
+             const Complex& value) -> void {
+            auto ident = constituents::parse(name);
+            self.set_tide(ident, value);
+          },
+          py::arg("name"), py::arg("value"),
+          R"__doc__(
 Set the tide of a constituent.
 
 Args:
   name: The constituent name.
   value: The tide value.
 )__doc__")
-      .def(
-          "select_waves_for_analysis",
-          &WaveTableInterface::select_waves_for_analysis, py::arg("duration"),
-          py::arg("f") = 2.0,
-          R"__doc__(
+      .def("select_waves_for_analysis",
+           &WaveTableInterface::select_waves_for_analysis, py::arg("duration"),
+           py::arg("f") = 2.0,
+           R"__doc__(
 Return the list of tidal waves such that their period is more than
 twice the duration of the time series analyzed.
 
@@ -165,9 +163,8 @@ Returns:
              const angle::Formulae formulae,
              const bool group_modulations) -> Eigen::VectorXd {
             auto epoch_sec = python::npdatetime64_to_epoch(epoch);
-            auto args =
-                NodalCorrectionsArgs(angle::Astronomic(formulae),
-                                     group_modulations);
+            auto args = NodalCorrectionsArgs(angle::Astronomic(formulae),
+                                             group_modulations);
             return self.tide_from_tide_series(epoch_sec, wave, args);
           },
           py::arg("epoch"), py::arg("wave"),
@@ -192,9 +189,8 @@ Returns:
              const DynamicRef<const Eigen::MatrixXcd>& wave,
              const angle::Formulae formulae, const bool group_modulations,
              const size_t num_threads) -> Eigen::MatrixXd {
-            auto args =
-                NodalCorrectionsArgs(angle::Astronomic(formulae),
-                                     group_modulations);
+            auto args = NodalCorrectionsArgs(angle::Astronomic(formulae),
+                                             group_modulations);
             auto epoch_sec = python::datemanip::as_float64(epoch);
             py::gil_scoped_release release;
             return self.tide_from_mapping(epoch_sec, wave, args, num_threads);
@@ -224,9 +220,8 @@ Returns:
              const angle::Formulae formulae, const bool group_modulations)
               -> std::tuple<Eigen::MatrixXd, Eigen::MatrixXd> {
             auto epoch_sec = python::npdatetime64_to_epoch(epoch);
-            auto args =
-                NodalCorrectionsArgs(angle::Astronomic(formulae),
-                                     group_modulations);
+            auto args = NodalCorrectionsArgs(angle::Astronomic(formulae),
+                                             group_modulations);
             return self.compute_nodal_modulations(epoch_sec, args);
           },
           py::arg("epoch"),
@@ -249,11 +244,10 @@ Returns:
            &WaveTableInterface::generate_markdown_table,
            "Generate a markdown table summarizing the constituents handled by "
            "the wave table.")
-      .def("__repr__",
-           [](const WaveTableInterface& self) -> std::string {
-             return "<WaveTableInterface with " +
-                    std::to_string(self.size()) + " constituents>";
-           });
+      .def("__repr__", [](const WaveTableInterface& self) -> std::string {
+        return "<WaveTableInterface with " + std::to_string(self.size()) +
+               " constituents>";
+      });
 }
 
 inline auto init_wave_table_factory(py::module& m) -> void {

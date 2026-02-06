@@ -2,8 +2,6 @@
 //
 // All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-#include "fes/interface/tidal_model.hpp"
-
 #include <pybind11/complex.h>
 #include <pybind11/eigen.h>
 #include <pybind11/pybind11.h>
@@ -12,6 +10,7 @@
 #include <cstdint>
 
 #include "fes/detail/parallel_for.hpp"
+#include "fes/interface/tidal_model.hpp"
 
 namespace py = pybind11;
 
@@ -91,8 +90,7 @@ static auto interpolate(const TidalModelInterface<T>& self,
         self.accelerator(angle::Formulae::kSchuremanOrder1, 0.0));
     for (auto ix = start; ix < end; ++ix) {
       auto quality = kUndefined;
-      for (auto&& item :
-           self.interpolate({lon[ix], lat[ix]}, quality, *acc)) {
+      for (auto&& item : self.interpolate({lon[ix], lat[ix]}, quality, *acc)) {
         values[std::get<0>(item)][ix] =
             quality == kUndefined ? std::numeric_limits<double>::quiet_NaN()
                                   : std::get<1>(item);
@@ -146,8 +144,7 @@ Returns:
   The accelerator.
 )__doc__")
       .def("interpolate", &interpolate<T>, py::arg("lon"), py::arg("lat"),
-           py::arg("num_threads") = 0,
-           py::call_guard<py::gil_scoped_release>(),
+           py::arg("num_threads") = 0, py::call_guard<py::gil_scoped_release>(),
            R"__doc__(
 Interpolate the wave models loaded at the given coordinates.
 

@@ -6,9 +6,10 @@
 /// @brief Astronomic angle.
 #pragma once
 #include <sys/stat.h>
+
+#include <cassert>
 #include <cmath>
 #include <limits>
-#include <cassert>
 
 #include "fes/delta_time.hpp"
 #include "fes/detail/math.hpp"

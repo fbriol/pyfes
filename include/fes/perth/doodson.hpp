@@ -48,8 +48,7 @@ inline auto calculate_doodson_argument(
 /// (without the 5's). The returned frequency is in units of degrees per hour.
 /// @param[in] doodson_number Doodson number as a 6-dimensional vector.
 /// @return Frequency in degrees per hour.
-inline auto tidal_frequency(const Vector7b& doodson_number)
-    -> double {
+inline auto tidal_frequency(const Vector7b& doodson_number) -> double {
   static const auto rates = []() -> Vector6d {
     // Time interval in days
     constexpr double del = 0.05;

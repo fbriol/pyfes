@@ -2,14 +2,13 @@
 //
 // All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-#include "fes/perth/wave.hpp"
-
 #include <pybind11/complex.h>
 #include <pybind11/eigen.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
 #include "fes/perth/constituent.hpp"
+#include "fes/perth/wave.hpp"
 #include "fes/perth/wave_table.hpp"
 
 namespace py = pybind11;
@@ -18,18 +17,15 @@ namespace fes {
 namespace perth {
 
 inline auto init_wave(py::module& m) -> void {
-  py::class_<Wave, WaveInterface, std::unique_ptr<Wave>>(
-      m, "Wave",
-      R"__doc__(
+  py::class_<Wave, WaveInterface, std::unique_ptr<Wave>>(m, "Wave",
+                                                         R"__doc__(
 A tidal wave using Doodson's notation system.
 
 Perth waves are described by a 7-element Doodson number vector that directly
 encodes the tidal argument in terms of astronomical variables.
 )__doc__")
-      .def_property_readonly("name", &Wave::name,
-                             "The name of the tidal wave.")
-      .def_property_readonly("type", &Wave::type,
-                             "The type of tidal wave.")
+      .def_property_readonly("name", &Wave::name, "The name of the tidal wave.")
+      .def_property_readonly("type", &Wave::type, "The type of tidal wave.")
       .def(
           "frequency",
           [](const Wave& self, const FrequencyUnit unit) -> double {

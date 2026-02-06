@@ -28,9 +28,7 @@ class Wave : public WaveInterface {
 
   /// @brief Gets the frequency in radians per hour.
   /// @return The frequency in radians per hour.
-  auto frequency() const noexcept -> double final {
-    return freq_;
-  }
+  auto frequency() const noexcept -> double final { return freq_; }
 
   /// @brief Clones the wave.
   /// @return A unique pointer to the cloned wave.

@@ -67,8 +67,7 @@ struct TriangleQueryResult {
   /// @param point The point to be used to calculate the interpolation weights.
   inline TriangleQueryResult(std::vector<VertexAttribute> nearest_vertices,
                              const geometry::Point& point)
-      : point(point),
-        nearest_vertices(std::move(nearest_vertices)) {}
+      : point(point), nearest_vertices(std::move(nearest_vertices)) {}
 
   /// @brief Check if the requested point is inside the mesh.
   /// @return True if the point is inside the mesh, false otherwise.
@@ -139,7 +138,8 @@ class Index : public std::enable_shared_from_this<Index> {
 
   /// R*Tree type
   using RTreeType =
-      boost::geometry::index::rtree<ValueType, boost::geometry::index::rstar<16>>;
+      boost::geometry::index::rtree<ValueType,
+                                    boost::geometry::index::rstar<16>>;
 
   /// The latitude coordinates of the mesh vertices.
   Eigen::VectorXd lon_;

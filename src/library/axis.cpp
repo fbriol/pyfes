@@ -128,8 +128,8 @@ auto Axis::find_indices(double coordinate) const
   /// and first index.
   if (i0 == -1) {
     return is_longitude_ ? optional_t(std::make_tuple(
-                              static_cast<int64_t>(length - 1), 0LL))
-                        : optional_t();
+                               static_cast<int64_t>(length - 1), 0LL))
+                         : optional_t();
   }
 
   // Given the delta between the found coordinate and the given coordinate,

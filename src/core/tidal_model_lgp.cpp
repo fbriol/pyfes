@@ -2,13 +2,12 @@
 //
 // All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-#include "fes/tidal_model/lgp.hpp"
-
 #include <pybind11/eigen.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
 #include "fes/python/optional.hpp"  // IWYU pragma: keep
+#include "fes/tidal_model/lgp.hpp"
 
 namespace py = pybind11;
 
@@ -25,12 +24,10 @@ discretization.
 )__doc__")
       .def(py::init<
                std::shared_ptr<mesh::Index>,
-               typename tidal_model::LGP1<T>::CodesType, TideType,
-               double,
+               typename tidal_model::LGP1<T>::CodesType, TideType, double,
                boost::optional<std::tuple<double, double, double, double>>>(),
-           py::arg("index"), py::arg("codes"),
-           py::arg("tide_type") = kTide, py::arg("max_distance") = 0,
-           py::arg("bbox") = boost::none,
+           py::arg("index"), py::arg("codes"), py::arg("tide_type") = kTide,
+           py::arg("max_distance") = 0, py::arg("bbox") = boost::none,
            R"__doc__(
 Construct a LGP1 tidal model.
 
@@ -73,12 +70,10 @@ discretization.
 )__doc__")
       .def(py::init<
                std::shared_ptr<mesh::Index>,
-               typename tidal_model::LGP2<T>::CodesType, TideType,
-               double,
+               typename tidal_model::LGP2<T>::CodesType, TideType, double,
                boost::optional<std::tuple<double, double, double, double>>>(),
-           py::arg("index"), py::arg("codes"),
-           py::arg("tide_type") = kTide, py::arg("max_distance") = 0,
-           py::arg("bbox") = boost::none,
+           py::arg("index"), py::arg("codes"), py::arg("tide_type") = kTide,
+           py::arg("max_distance") = 0, py::arg("bbox") = boost::none,
            R"__doc__(
 Construct a LGP2 tidal model.
 

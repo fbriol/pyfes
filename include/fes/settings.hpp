@@ -153,11 +153,11 @@ class PerthSettings : public Settings {
 };
 
 /// @brief Generate a Markdown table describing the settings, the constiuents
-/// provided by the model and infered.
+/// provided by the model and inferred.
 /// @param[in] settings The settings for which to generate the table.
 /// @param[in] modeled_constituents The list of constituents provided by
 /// the model. Default is empty, in which case the table will only contain
-/// the infered constituents.
+/// the inferred constituents.
 /// @return A string containing the Markdown table.
 auto generate_markdown_table(
     const Settings& settings,

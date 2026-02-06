@@ -96,11 +96,11 @@ class Map {
   /// @return Pointer to the associated value, or nullptr if the key is not
   /// present.
   constexpr auto get(KeyT key) noexcept -> ValueT* {
-      auto end = data_.begin() + size_;
-      auto it = std::find_if(data_.begin(), end, [&key](const auto& pair) {
-        return pair.first == key;
-      });
-      return (it != end) ? &it->second : nullptr;
+    auto end = data_.begin() + size_;
+    auto it = std::find_if(data_.begin(), end, [&key](const auto& pair) {
+      return pair.first == key;
+    });
+    return (it != end) ? &it->second : nullptr;
   }
 
   /// @brief Gets the value associated with a key.

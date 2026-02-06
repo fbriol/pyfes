@@ -621,7 +621,7 @@ auto LGP<T, N>::interpolate(const geometry::Point& point, Quality& quality,
   // Reset the accelerator if the point is not in the cache, otherwise update
   // the point in use.
   lgp_acc.in_cache(point) ? lgp_acc.reset(point)
-                           : lgp_acc.set(index_->search(point, max_distance_));
+                          : lgp_acc.set(index_->search(point, max_distance_));
 
   // Remove all the data from the previous interpolation
   lgp_acc.clear();

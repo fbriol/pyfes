@@ -297,8 +297,7 @@ TEST(DarwinBuilder, MethodChaining) {
                                 .xi(8)
                                 .nu(9)
                                 .nuprim(10)
-                                .nusec(11)
-                                ;
+                                .nusec(11);
 
   EXPECT_EQ(darwin.t, 1);
   EXPECT_EQ(darwin.s, 2);
@@ -315,8 +314,7 @@ TEST(DarwinBuilder, MethodChaining) {
 
 // Test Builder partial configuration
 TEST(DarwinBuilder, PartialConfiguration) {
-  constexpr Darwin darwin =
-      Darwin::Builder().T(2).s(-2).h(2).xi(2).nu(-2);
+  constexpr Darwin darwin = Darwin::Builder().T(2).s(-2).h(2).xi(2).nu(-2);
 
   EXPECT_EQ(darwin.t, 2);
   EXPECT_EQ(darwin.s, -2);

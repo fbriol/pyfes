@@ -184,7 +184,8 @@ class WaveInterface {
   /// @param u Nodal correction for phase.
   /// @param v Greenwich argument.
   /// @param unit The angular unit of the nodal corrections.
-  constexpr void set_nodal_corrections(double f, double u, double v, AngleUnit unit) noexcept {
+  constexpr void set_nodal_corrections(double f, double u, double v,
+                                       AngleUnit unit) noexcept {
     f_ = f;
     u_ = unit == AngleUnit::kRadian ? u : detail::math::radians(u);
     v_ = unit == AngleUnit::kRadian ? v : detail::math::radians(v);

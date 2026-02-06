@@ -22,5 +22,5 @@ inline auto iequals(const std::string &a, const std::string &b) -> bool {
       a, b, [](char a, char b) { return tolower(a) == tolower(b); });
 }
 
-} // namespace detail
-} // namespace fes
+}  // namespace detail
+}  // namespace fes

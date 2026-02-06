@@ -2,14 +2,13 @@
 //
 // All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-#include "fes/darwin/wave.hpp"
-
 #include <pybind11/complex.h>
 #include <pybind11/eigen.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
 
 #include "fes/darwin/constituent.hpp"
+#include "fes/darwin/wave.hpp"
 #include "fes/darwin/wave_table.hpp"
 
 namespace py = pybind11;
@@ -18,18 +17,15 @@ namespace fes {
 namespace darwin {
 
 inline auto init_wave(py::module& m) -> void {
-  py::class_<Wave, WaveInterface, std::unique_ptr<Wave>>(
-      m, "Wave",
-      R"__doc__(
+  py::class_<Wave, WaveInterface, std::unique_ptr<Wave>>(m, "Wave",
+                                                         R"__doc__(
 A tidal wave using Darwin's notation system.
 
 Darwin waves are described by 11 parameters that encode the astronomical
 arguments and nodal correction coefficients.
 )__doc__")
-      .def_property_readonly("name", &Wave::name,
-                             "The name of the tidal wave.")
-      .def_property_readonly("type", &Wave::type,
-                             "The type of tidal wave.")
+      .def_property_readonly("name", &Wave::name, "The name of the tidal wave.")
+      .def_property_readonly("type", &Wave::type, "The type of tidal wave.")
       .def(
           "frequency",
           [](const Wave& self, const FrequencyUnit unit) -> double {

@@ -32,9 +32,9 @@ class Triangle : public GeographicPolygon {
   /// @param[in] v3 The third vertex.
   inline Triangle(const Point &v1, const Point &v2, const Point &v3)
       : GeographicPolygon{{{v1.lon(), v1.lat()},
-                    {v2.lon(), v2.lat()},
-                    {v3.lon(), v3.lat()},
-                    {v1.lon(), v1.lat()}}} {}
+                           {v2.lon(), v2.lat()},
+                           {v3.lon(), v3.lat()},
+                           {v1.lon(), v1.lat()}}} {}
 
   /// Get the first vertex.
   inline auto v1() const -> const Point & { return this->outer()[0]; }

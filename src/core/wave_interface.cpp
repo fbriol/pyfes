@@ -2,20 +2,19 @@
 //
 // All rights reserved. Use of this source code is governed by a
 // BSD-style license that can be found in the LICENSE file.
-#include "fes/interface/wave.hpp"
-
 #include <pybind11/complex.h>
 #include <pybind11/eigen.h>
 #include <pybind11/pybind11.h>
 #include <pybind11/stl.h>
+
+#include "fes/interface/wave.hpp"
 
 namespace py = pybind11;
 
 namespace fes {
 
 inline auto init_frequency_unit(py::module& m) -> void {
-  py::enum_<FrequencyUnit>(m, "FrequencyUnit",
-                           "Unit for tidal wave frequency.")
+  py::enum_<FrequencyUnit>(m, "FrequencyUnit", "Unit for tidal wave frequency.")
       .value("RADIAN_PER_HOUR", FrequencyUnit::kRadianPerHour,
              "Frequency in radians per hour.")
       .value("DEGREE_PER_HOUR", FrequencyUnit::kDegreePerHour,
@@ -44,7 +43,8 @@ class PyWaveInterface : public WaveInterface {
   using WaveInterface::WaveInterface;
 
   auto clone() const -> std::unique_ptr<WaveInterface> override {
-    PYBIND11_OVERLOAD_PURE(std::unique_ptr<WaveInterface>, WaveInterface, clone);
+    PYBIND11_OVERLOAD_PURE(std::unique_ptr<WaveInterface>, WaveInterface,
+                           clone);
   }
 
   auto frequency() const noexcept -> double override {
@@ -52,7 +52,8 @@ class PyWaveInterface : public WaveInterface {
   }
 
   auto compute_nodal_corrections(const angle::Astronomic& angles,
-                                 const bool group_modulations) -> void override {
+                                 const bool group_modulations)
+      -> void override {
     PYBIND11_OVERLOAD_PURE(void, WaveInterface, compute_nodal_corrections,
                            angles, group_modulations);
   }

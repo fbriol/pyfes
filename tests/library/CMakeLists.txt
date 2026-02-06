@@ -18,7 +18,6 @@ macro(ADD_TESTCASE testname)
   endif()
 endmacro()
 
-
 add_testcase(axis fes)
 add_testcase(darwin)
 add_testcase(delta_time)

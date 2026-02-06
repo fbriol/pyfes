@@ -168,25 +168,24 @@ Returns:
 )__doc__")
       .def("__repr__", [](const Settings& self) -> std::string {
         return "<Settings engine_type=" +
-               std::string(self.engine_type() == EngineType::kDarwin
-                               ? "DARWIN"
-                               : "DOODSON") +
-               " inference_type=" +
-               [&]() -> std::string {
-                 switch (self.inference_type()) {
-                   case InferenceType::kSpline:
-                     return "SPLINE";
-                   case InferenceType::kZero:
-                     return "ZERO";
-                   case InferenceType::kLinear:
-                     return "LINEAR";
-                   case InferenceType::kFourier:
-                     return "FOURIER";
-                   default:
-                     return "UNKNOWN";
-                 }
-               }() +
-               " num_threads=" + std::to_string(self.num_threads()) + ">";
+                   std::string(self.engine_type() == EngineType::kDarwin
+                                   ? "DARWIN"
+                                   : "DOODSON") +
+                   " inference_type=" + [&]() -> std::string {
+          switch (self.inference_type()) {
+            case InferenceType::kSpline:
+              return "SPLINE";
+            case InferenceType::kZero:
+              return "ZERO";
+            case InferenceType::kLinear:
+              return "LINEAR";
+            case InferenceType::kFourier:
+              return "FOURIER";
+            default:
+              return "UNKNOWN";
+          }
+        }() + " num_threads=" + std::to_string(self.num_threads()) +
+                                                     ">";
       });
 }
 
@@ -232,8 +231,7 @@ inline auto init_generate_markdown_table(py::module& m) -> void {
   m.def(
       "generate_markdown_table",
       [](const Settings& settings,
-         const std::vector<std::string>& modeled_constituents)
-          -> std::string {
+         const std::vector<std::string>& modeled_constituents) -> std::string {
         auto ids = std::vector<ConstituentId>();
         ids.reserve(modeled_constituents.size());
         for (const auto& name : modeled_constituents) {

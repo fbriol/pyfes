@@ -377,7 +377,8 @@ auto fourier_interpolation(double /*x1*/, const Complex& z1, double /*x2*/,
 
 // ============================================================================
 
-inline auto PerthInference::evaluate_node_tide(WaveInterface& node, const double lat)
+inline auto PerthInference::evaluate_node_tide(WaveInterface& node,
+                                               const double lat)
     -> const Complex& {
   if (!node.is_modeled()) {
     constexpr auto gamma2 = 0.682;
@@ -392,8 +393,9 @@ inline auto PerthInference::evaluate_node_tide(WaveInterface& node, const double
 
 // ============================================================================
 
-inline PerthInference::PerthInference(const WaveTableInterface& wave_table,
-                                      const InterpolationType interpolation_type) {
+inline PerthInference::PerthInference(
+    const WaveTableInterface& wave_table,
+    const InterpolationType interpolation_type) {
   /// Inferred diurnal constituents with their frequencies.
   static constexpr const Map<ConstituentId, double, 19>
       kInferredDiurnalConstituents_{{{{ConstituentId::k2Q1, 0.006638},

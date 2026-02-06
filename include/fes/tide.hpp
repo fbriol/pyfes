@@ -7,6 +7,7 @@
 #pragma once
 
 #include <Eigen/Core>
+#include <boost/none.hpp>
 #include <boost/optional.hpp>
 #include <limits>
 
@@ -22,7 +23,6 @@
 namespace fes {
 namespace detail {
 
-template <typename T>
 inline auto evaluate_tide_from_waves(const double epoch, const double latitude,
                                      const bool compute_long_period_equilibrium,
                                      const Settings& settings,
@@ -88,7 +88,7 @@ inline auto evaluate_tide(const TidalModelInterface<T>& tidal_model,
     return {std::numeric_limits<double>::quiet_NaN(), long_period_equilibrium,
             quality};
   }
-  auto tides = evaluate_tide_from_waves<T>(
+  auto tides = evaluate_tide_from_waves(
       epoch, latitude, compute_long_period_equilibrium, settings, wave_table,
       inference, long_period, acc);
   return {std::get<0>(tides), std::get<1>(tides), quality};
@@ -148,6 +148,57 @@ auto evaluate_tide(const TidalModelInterface<T>* const tidal_model,
 
   detail::parallel_for(worker, epoch.size(), settings_instance.num_threads());
   return {tide, long_period, quality};
+}
+
+auto evaluate_tide_from_constituents(
+    const std::map<ConstituentId, Complex>& constituents,
+    const Eigen::Ref<const Eigen::VectorXd>& epoch, const double latitude,
+    const boost::optional<Settings>& settings = boost::none)
+    -> std::tuple<Eigen::VectorXd, Eigen::VectorXd> {
+  // Allocates the result vectors
+  auto tide = Eigen::VectorXd(epoch.size());
+  auto long_period = Eigen::VectorXd(epoch.size());
+
+  // Use default settings if not provided
+  auto settings_instance = settings.value_or(Settings{});
+
+  // Worker function to evaluate the tide for a chunk of data. This will be
+  // executed in parallel across multiple threads.
+  auto worker = [&](const int64_t start, const int64_t end) {
+    // For each thread, we create a new instance of the wave table and
+    // accelerator
+    auto acc = Accelerator(settings_instance.astronomic_formulae(),
+                           settings_instance.time_tolerance(), 0);
+
+    auto wt_ptr = wave_table_factory(settings_instance.engine_type());
+    wt_ptr->set_modeled_constituents(constituents);
+    wt_ptr->set_tides(constituents);
+
+    auto inference_ptr =
+        inference_factory(*wt_ptr, settings_instance.inference_type());
+
+    // For optimization purposes, we capture the dereferenced pointers to avoid
+    // unnecessary pointer dereferencing in the inner loop.
+    auto& wt_instance = *wt_ptr;
+    auto& inference_instance = *inference_ptr;
+
+    // Initialize the long period equilibrium handler for this thread
+    auto lpe = LongPeriodEquilibrium(wt_instance);
+
+    // Flag to indicate whether to compute the long period equilibrium.
+    const auto compute_long_period_equilibrium =
+        settings_instance.compute_long_period_equilibrium();
+
+    for (auto ix = start; ix < end; ++ix) {
+      std::tie(tide(ix), long_period(ix)) = detail::evaluate_tide_from_waves(
+          epoch(ix), latitude, compute_long_period_equilibrium,
+          settings_instance, wt_instance, inference_instance, lpe, acc);
+    }
+  };
+
+  fes::detail::parallel_for(worker, epoch.size(),
+                            settings_instance.num_threads());
+  return {tide, long_period};
 }
 
 }  // namespace fes

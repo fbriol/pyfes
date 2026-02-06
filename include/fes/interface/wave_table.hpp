@@ -30,6 +30,27 @@ enum class EngineType : uint8_t {
 using ConstituentMap =
     EnumMap<ConstituentId, std::unique_ptr<WaveInterface>, kKnownConstituents>;
 
+
+/// @brief Helper function to extract the key from a `std::vector<T>`
+/// @tparam T The type of the elements in the vector
+/// @param val The value from which to extract the key
+/// @return The key extracted from the value
+template <typename T>
+constexpr auto extract_key(const T& val) -> const T& {
+  return val;
+}
+
+/// @brief Helper function to extract the key from a `std::pair<K, V>`
+/// @tparam K The type of the key in the pair
+/// @tparam V The type of the value in the pair
+/// @param val The value from which to extract the key
+/// @return The key extracted from the value
+template <typename K, typename V>
+constexpr auto extract_key(const std::pair<K, V>& p) -> const K& {
+  return p.first;
+}
+
+
 /// @brief Tidal wave table interface.
 class WaveTableInterface {
  public:
@@ -68,6 +89,24 @@ class WaveTableInterface {
   /// @return A unique pointer to the cloned wave table.
   virtual auto clone() const -> std::unique_ptr<WaveTableInterface> = 0;
 
+  /// @brief Set all provided constituents as modeled in the wave table.
+  /// @tparam Container Iterable of constituent IDs or (ConstituentId, V) pairs.
+  /// Elements may be a ConctiuentId or std::pair<ConstituentId, V>, where V is
+  /// any associated value (e.g., amplitude).
+  /// @param[in] constituents The list of constituent identifiers to set as
+  /// modeled.
+  template <typename Container>
+  inline auto set_modeled_constituents(const Container& constituents) -> void {
+    for (const auto& item : constituents) {
+      const auto& ident = extract_key(item);
+      auto* ptr = map_.get(ident)->get();
+      if (ptr == nullptr) {
+        throw out_of_range(ident);
+      }
+      ptr->set_is_modeled(true);
+    }
+  }
+
   /// Set the tide of a constituent
   /// @param[in] ident The constituent identifier
   /// @param[out] value The tide value
@@ -77,6 +116,17 @@ class WaveTableInterface {
       throw out_of_range(ident);
     }
     ptr->set_tide(value);
+  }
+
+  /// @brief Set the tide for the provided constituents.
+  /// @tparam Container Iterable of (ConstituentId, Complex) pairs.
+  /// @param[in] constituents The list of constituent identifiers and their
+  /// corresponding tide values to set in the wave table.
+  template <typename Container>
+  inline auto set_tides(const Container& tides) -> void {
+    for (const auto& item : tides) {
+      set_tide(item.first, item.second);
+    }
   }
 
   /// @brief Computes the nodal corrections for all constituents in the table.
@@ -268,4 +318,4 @@ class WaveTableInterface {
 auto wave_table_factory(const EngineType engine_type)
     -> std::unique_ptr<WaveTableInterface>;
 
-}  // namespace fes
+  }  // namespace fes

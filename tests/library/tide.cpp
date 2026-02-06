@@ -134,26 +134,26 @@ TEST_F(EvaluateTideTest, FES) {
   EXPECT_EQ(std::get<2>(result)(0), 4);
 }
 
-// TEST_F(EvaluateTideFromConstituentsTest, Darwin) {
-//   // BREST location = (lon:-4.495, lat:48.383)
+TEST_F(EvaluateTideFromConstituentsTest, Darwin) {
+  // BREST location = (lon:-4.495, lat:48.383)
 
-//   auto epochs = Eigen::Vector<double, 1>::Constant(410227200.0);
+  auto epochs = Eigen::Vector<double, 1>::Constant(410227200.0);
 
-//   auto result = evaluate_tide_from_constituents(
-//       data_, epochs, 48.383, FESSettings{}.with_num_threads((1)));
-//   EXPECT_NEAR(std::get<0>(result)(0), -272.41405405513166, 1e-6);
-//   EXPECT_NEAR(std::get<1>(result)(0), 3.8406047433116997, 1e-6);
-// }
+  auto result = evaluate_tide_from_constituents(
+      data_, epochs, 48.383, FESSettings{}.with_num_threads((1)));
+  EXPECT_NEAR(std::get<0>(result)(0), -272.41405405513166, 1e-6);
+  EXPECT_NEAR(std::get<1>(result)(0), 3.8406047433116997, 1e-6);
+}
 
-// TEST_F(EvaluateTideFromConstituentsTest, Perth5) {
-//   // BREST location = (lon:-4.495, lat:48.383)
+TEST_F(EvaluateTideFromConstituentsTest, Perth5) {
+  // BREST location = (lon:-4.495, lat:48.383)
 
-//   auto epochs = Eigen::Vector<double, 1>::Constant(410227200.0);
+  auto epochs = Eigen::Vector<double, 1>::Constant(410227200.0);
 
-//   auto result = evaluate_tide_from_constituents(
-//       data_, epochs, 48.383, PerthSettings{}.with_num_threads((1)));
-//   EXPECT_NEAR(std::get<0>(result)(0), -271.65613183365048, 1e-6);
-//   EXPECT_NEAR(std::get<1>(result)(0), 3.9218121242411668, 1e-6);
-// }
+  auto result = evaluate_tide_from_constituents(
+      data_, epochs, 48.383, PerthSettings{}.with_num_threads((1)));
+  EXPECT_NEAR(std::get<0>(result)(0), -271.65613183365048, 1e-6);
+  EXPECT_NEAR(std::get<1>(result)(0), 3.9218121242411668, 1e-6);
+}
 
 }  // namespace fes

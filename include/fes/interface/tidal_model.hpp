@@ -159,13 +159,8 @@ class TidalModelInterface
   auto wave_table(EngineType engine_type) const
       -> std::unique_ptr<WaveTableInterface> {
     auto wt = wave_table_factory(engine_type);
-    auto& wt_instance = *wt;
-    for (auto& item : data_) {
-      wt_instance[item.first]->set_is_modeled(true);
-    }
-    for(auto& item : dynamic_) {
-      wt_instance[item]->set_is_modeled(true);
-    }
+    wt->set_modeled_constituents(data_);
+    wt->set_modeled_constituents(dynamic_);
     return wt;
   }
 

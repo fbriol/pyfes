@@ -11,6 +11,7 @@
 
 #include "fes/interface/tidal_model.hpp"
 #include "fes/python/datetime64.hpp"
+#include "fes/python/optional.hpp"  // IWYU pragma: keep
 #include "fes/settings.hpp"
 #include "fes/tide.hpp"
 
@@ -76,8 +77,7 @@ void init_evaluate_tide(py::module& m) {
 Ocean tide calculation.
 
 This function computes ocean tides by interpolating tidal constituents from
-a tidal model at the specified positions and times. The computation engine
-(FES or PERTH5) is determined by the settings object.
+a tidal model at the specified positions and times.
 
 Args:
   tidal_model: Tidal model used to interpolate the modelized waves.
@@ -126,8 +126,7 @@ Args:
   date: Date of the tide calculation (numpy.datetime64 array).
   latitude: Latitude in degrees for the position at which the tide is
     calculated.
-  settings: Settings for the tide computation. Use FesRuntimeSettings for
-    the FES/Darwin engine or PerthRuntimeSettings for the PERTH5 engine.
+  settings: Settings for the tide computation.
 
 Returns:
   A tuple containing:

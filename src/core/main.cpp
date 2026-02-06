@@ -13,7 +13,9 @@ extern void init_darwin(py::module& m);
 extern void init_datemanip(py::module& m);
 extern void init_lgp_model(py::module& m);
 extern void init_perth(py::module& m);
+extern void init_settings(py::module& m);
 extern void init_tidal_model_interface(py::module& m);
+extern void init_tide(py::module& m);
 extern void init_wave_interface(py::module& m);
 extern void init_wave_table_interface(py::module& m);
 
@@ -31,6 +33,9 @@ PYBIND11_MODULE(core, m) {
   init_wave_table_interface(m);
   init_tidal_model_interface(m);
 
+  // Settings (depends on EngineType, Formulae, and InferenceType enums)
+  init_settings(m);
+
   // Concrete implementations of WaveInterface and WaveTableInterface
   init_darwin(m);
   init_perth(m);
@@ -38,4 +43,7 @@ PYBIND11_MODULE(core, m) {
   // Concrete implementations of tidal model interface
   init_cartesian_model(tidal_model);
   init_lgp_model(tidal_model);
+
+  // Tide evaluation function (depends on all the above)
+  init_tide(m);
 }
